@@ -2,7 +2,10 @@ from fastapi import APIRouter, Depends
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
+import sqlalchemy
+from src import database as db
 
+        
 router = APIRouter(
     prefix="/bottler",
     tags=["bottler"],
@@ -15,6 +18,8 @@ class PotionInventory(BaseModel):
 
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
+    #with db.engine.begin() as connection:
+    #    result = connection.execute(sqlalchemy.text(sql_to_execute))
     """ """
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
@@ -22,6 +27,9 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
 @router.post("/plan")
 def get_bottle_plan():
+    #with db.engine.begin() as connection:
+    #    result = connection.execute(sqlalchemy.text(sql_to_execute))
+
     """
     Go from barrel to bottle.
     """
