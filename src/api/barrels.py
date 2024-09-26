@@ -4,6 +4,7 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 
+#
 #As a very basic initial logic, purchase a new small green potion barrel only if the number of potions 
 #in inventory is less than 10. Always mix all available green ml if any exists. Offer up for sale in 
 #the catalog only the amount of green potions that actually exist currently in inventory.
