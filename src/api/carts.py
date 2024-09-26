@@ -107,3 +107,4 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
     return {"total_potions_bought": 1, "total_gold_paid": 50}
+
