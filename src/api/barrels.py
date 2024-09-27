@@ -53,8 +53,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         # if  less than 10 pots, buy a barrel
         # pretty sure 100ml = 1 pot ..?
         if num_green_potions < 10 :
+            #check all barrels for green
             for barrel in wholesale_catalog :
-                if barrel.potion_type == 1 and barrel.sku == "SMALL_GREEN_BARREL" :
+                if barrel.potion_type == [1] and barrel.sku == "SMALL_GREEN_BARREL" :
                     return [
                     {
                         "sku": "SMALL_GREEN_BARREL",
