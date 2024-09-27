@@ -41,9 +41,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     #interact with db
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
-        num_green_potions = result.mappings().one()['num_green_potions']
-        num_green_ml = result.mappings().one()['num_green_ml']
+        result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))
+        # num_green_potions = result.mappings().one()['num_green_potions']
+        # num_green_ml = result.mappings().one()['num_green_ml']
         gold = result.mappings().one()['gold']
         return gold
     #     for row in result:
