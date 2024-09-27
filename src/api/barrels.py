@@ -28,10 +28,24 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     # interact with db
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, gold FROM global_inventory"))
+        row = result.mappings().one()  # Using mappings to access the columns by name
 
+        # Extract values from the row
+        
+        num_green_ml = row['num_green_ml']
+        gold = row['gold']
+
+        for barrel in barrels_delivered :
+            gold -= barrel.price
+            num_green_ml += barrel.ml_per_barrel
+        
+
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :additional_green_ml, gold = :gold;"),
+                            {"additional_green_ml": num_green_ml, "gold": gold})
     """ """
-    print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
+    #print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
 
@@ -41,54 +55,33 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     #interact with db
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory"))
 
         row = result.mappings().one()  # Using mappings to access the columns by name
 
         # Extract values from the row
         num_green_potions = row['num_green_potions']
-        num_green_ml = row['num_green_ml']
         gold = row['gold']
 
         sku = ""
         quantity = 0
-        additional_green_ml = 0
         # if  less than 10 pots, buy a barrel
         # pretty sure 100ml = 1 pot ..?
         if num_green_potions < 10 :
             #check all barrels for green
             for barrel in wholesale_catalog :
-                if barrel.potion_type == [1] and barrel.sku == "SMALL_GREEN_BARREL" and barrel.ml_per_barrel != 0:
+                # for green barrels (small)
+                if barrel.potion_type == [0,1,0,0] and barrel.ml_per_barrel != 0 and barrel.sku == "SMALL_GREEN_BARREL":
+                    #buy barrels until out of money or none are left
                     while barrel.price <= gold and barrel.quantity > 0:
-                        sku = "SMALL_GREEN_BARREL"
+                        sku = barrel.sku
                         quantity += 1
                         barrel.quantity -= 1
                         gold -= barrel.price
-                        additional_green_ml += barrel.ml_per_barrel
-        additional_green_ml += num_green_ml
-
-        # #updating database with transaction
-    with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :additional_green_ml, gold = :gold;"),
-                            {"additional_green_ml": additional_green_ml, "gold": gold})
+                        
     return [
         {
             "sku": sku,
             "quantity": quantity,
         }
     ]
-    """ """
-
-    # return [
-    #     {
-    #         "sku": "SMALL_GREEN_BARREL",
-    #         "quantity": 1,
-    #     }
-    # ]
-
-    # return [
-    #     {
-    #         "sku": "SMALL_RED_BARREL",
-    #         "quantity": 1,
-    #     }
-    # ]
