@@ -31,10 +31,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         for potion in potions_delivered :
             quan = potion.quantity + num_green_potions
             reduced_green_ml = num_green_ml - 100*potion.quantity
-            if potion.potion_type == [0,100,0,0] :
+            if potion.potion_type == [0, 100, 0, 0] :
                 with db.engine.begin() as connection:
                     connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :reduced_green_ml, num_green_potions = :quan;"),
-                                        {"reduced_green_ml": num_green_ml, "quan": num_green_potions})
+                                        {"reduced_green_ml": reduced_green_ml, "quan": quan})
     return "OK"
 
 @router.post("/plan")
