@@ -40,8 +40,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     #interact with db
 
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
+    # with db.engine.begin() as connection:
+    #     result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
 
     #     for row in result:
     #         num_green_potions = row['num_green_potions']
@@ -65,8 +65,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         #         num_green_ml += Barrel.ml_per_barrel
 
         # #updating database with transaction
-        with db.engine.begin() as connection:
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :100, gold = :50"))
+        # with db.engine.begin() as connection:
+        #     connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :100, gold = :50"))
 
     """ """
 
