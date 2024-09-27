@@ -65,12 +65,14 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         sku = ""
         quantity = 0
+        # change later to accomidate buyign bigger barrels too
+        buying_list = []
         # if  less than 10 pots, buy a barrel
         # pretty sure 100ml = 1 pot ..?
         if num_green_potions < 10 :
             #check all barrels for green
             for barrel in wholesale_catalog :
-                # for green barrels (small)
+                # for green barrels
                 if barrel.potion_type == [0,1,0,0] and barrel.ml_per_barrel != 0 and barrel.sku == "SMALL_GREEN_BARREL":
                     #buy barrels until out of money or none are left
                     while barrel.price <= gold and barrel.quantity > 0:
