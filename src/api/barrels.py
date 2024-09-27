@@ -61,6 +61,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     if barrel.price <= gold and barrel.quantity > 0:
                         sku = "SMALL_GREEN_BARREL"
                         quantity += 1
+                        barrel.quantity -= 1
                         gold -= barrel.price
 
 
