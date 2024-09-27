@@ -57,10 +57,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         if num_green_potions < 10 :
             #check all barrels for green
             for barrel in wholesale_catalog :
-                if barrel.potion_type == [1] and barrel.sku == "SMALL_GREEN_BARREL" and  barrel.price <= gold:
-                    sku = "SMALL_GREEN_BARREL"
-                    quantity += 1
-                    gold -= barrel.price
+                if barrel.potion_type == [1] and barrel.sku == "SMALL_GREEN_BARREL":
+                    if barrel.price <= gold and barrel.quantity > 0:
+                        sku = "SMALL_GREEN_BARREL"
+                        quantity += 1
+                        gold -= barrel.price
 
 
         # #updating database with transaction
