@@ -40,21 +40,16 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     #interact with db
 
-    # with db.engine.begin() as connection:
-    #     result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
-
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
+        num_green_potions = result.mappings().one()['num_green_potions']
+        num_green_ml = result.mappings().one()['num_green_ml']
+        gold = result.mappings().one()['gold']
+        return gold
     #     for row in result:
     #         num_green_potions = row['num_green_potions']
     #         num_green_ml = row['num_green_ml']
     #         gold = row['gold']
-
-
-    #         return [
-    #             {
-    #                 "sku": "gold_amount",  # You can set a meaningful SKU if needed
-    #                 "quantity": gold
-    #             }
-    #         ]
 
         # if  less than 10 pots, buy a barrel
         # pretty sure 100ml = 1 pot ..?
@@ -77,9 +72,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     #     }
     # ]
 
-    return [
-        {
-            "sku": "SMALL_RED_BARREL",
-            "quantity": 1,
-        }
-    ]
+    # return [
+    #     {
+    #         "sku": "SMALL_RED_BARREL",
+    #         "quantity": 1,
+    #     }
+    # ]
