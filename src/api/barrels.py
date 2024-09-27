@@ -52,22 +52,24 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         sku = ""
         quantity = 0
+        additional_green_ml = 0
         # if  less than 10 pots, buy a barrel
         # pretty sure 100ml = 1 pot ..?
         if num_green_potions < 10 :
             #check all barrels for green
             for barrel in wholesale_catalog :
-                if barrel.potion_type == [1] and barrel.sku == "SMALL_GREEN_BARREL":
+                if barrel.potion_type == [1] and barrel.sku == "SMALL_GREEN_BARREL" and barrel.ml_per_barrel != 0:
                     while barrel.price <= gold and barrel.quantity > 0:
                         sku = "SMALL_GREEN_BARREL"
                         quantity += 1
                         barrel.quantity -= 1
                         gold -= barrel.price
-
+                        additional_green_ml += barrel.ml_per_barrel
+        additional_green_ml += num_green_ml
 
         # #updating database with transaction
-        # with db.engine.begin() as connection:
-        #     connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :100, gold = :50"))
+        with db.engine.begin() as connection:
+            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = additional_green_ml, gold = gold;"))
         return [
             {
                 "sku": sku,
