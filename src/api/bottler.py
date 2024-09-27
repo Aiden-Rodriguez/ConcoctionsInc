@@ -18,8 +18,23 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
-    print(f"potions delievered: {potions_delivered} order_id: {order_id}")
+    #print(f"potions delievered: {potions_delivered} order_id: {order_id}")
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_green_potions FROM global_inventory"))
+        row = result.mappings().one()  # Using mappings to access the columns by name
 
+        # Extract values from the row
+        
+        num_green_ml = row['num_green_ml']
+        num_green_potions = row['num_green_potions']
+
+        for potion in potions_delivered :
+            quan = potion.quantity + num_green_potions
+            reduced_green_ml = num_green_ml - 100*potion.quantity
+            if potion.potion_type == [0,100,0,0] :
+                with db.engine.begin() as connection:
+                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :reduced_green_ml, num_green_potions = :quan;"),
+                                        {"reduced_green_ml": num_green_ml, "quan": num_green_potions})
     return "OK"
 
 @router.post("/plan")
@@ -35,6 +50,7 @@ def get_bottle_plan():
         # Extract values from the row
         num_green_ml = row['num_green_ml']
         num_to_convert = 0
+        #implement support for many pots later
         potion_list = []
         # Each bottle has a quantity of what proportion of red, blue, and
         # green potion to add.
