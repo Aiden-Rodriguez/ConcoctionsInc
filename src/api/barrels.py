@@ -68,7 +68,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         # #updating database with transaction
         # with db.engine.begin() as connection:
         #     connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :100, gold = :50"))
-        return [sku, quantity]
+        return [
+            {
+                "sku": sku,
+                "quantity": quantity,
+            }
+        ]
     """ """
 
     # return [
