@@ -37,8 +37,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         gold = row['gold']
 
         for barrel in barrels_delivered :
-            gold -= barrel.price
-            num_green_ml += barrel.ml_per_barrel
+            gold -= barrel.price * barrel.quantity
+            num_green_ml += barrel.ml_per_barrel * barrel.quantity
         
 
         with db.engine.begin() as connection:
