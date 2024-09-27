@@ -41,9 +41,9 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             num_green_ml += barrel.ml_per_barrel
         
 
-    with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :additional_green_ml, gold = :gold;"),
-                            {"additional_green_ml": num_green_ml, "gold": gold})
+        with db.engine.begin() as connection:
+            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :additional_green_ml, gold = :gold;"),
+                                {"additional_green_ml": num_green_ml, "gold": gold})
     """ """
     #print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
