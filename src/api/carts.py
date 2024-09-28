@@ -89,6 +89,8 @@ def create_cart(new_cart: Customer):
     """ """
     #Customer.# implement customer stuff once getting some data.
 
+    
+
     return {"cart_id": 1}
 
 class CartItem(BaseModel):
@@ -109,8 +111,26 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-    
-    return {"total_potions_bought": 1, "total_gold_paid": 50}
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory"))
+
+        row = result.mappings().one()  # Using mappings to access the columns by name
+
+        # Extract values from the row
+        num_green_potions = row['num_green_potions']
+        gold = row['gold']
+
+        if num_green_potions > 1:
+            num_green_potions -= 1
+            gold += 50
+            with db.engine.begin() as connection:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = :num_green_potions, gold = :gold;"),
+                {"num_green_potions": num_green_potions, "gold": gold})
+                return {"total_potions_bought": 1, "total_gold_paid": 50}            
+        else:
+            return {}
+
+
     # with db.engine.begin() as connection:
     #     result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory"))
 
