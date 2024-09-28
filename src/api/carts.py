@@ -98,7 +98,8 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-    
+
+    #?
     return "OK"
 
 
@@ -108,6 +109,26 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-    
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory"))
 
-    return {"total_potions_bought": 1, "total_gold_paid": 50}
+        row = result.mappings().one()  # Using mappings to access the columns by name
+
+        # Extract values from the row
+        num_green_potions = row['num_green_potions']
+        gold = row['gold']
+
+        #if we can sell the potions offered (assuming green pots)
+        if num_green_potions * 50 < cart_checkout.payment:
+            #purchase fails
+            return {}
+        else:
+            num_green_potions = num_green_potions - cart_checkout.payment/50
+            gold = gold + cart_checkout.payment
+
+
+            with db.engine.begin() as connection:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = :num_green_potions, gold = :gold;"),
+                {"num_green_potions": num_green_potions, "gold": gold})
+
+                return {"total_potions_bought": cart_checkout.payment/50, "total_gold_paid": cart_checkout.payment}
