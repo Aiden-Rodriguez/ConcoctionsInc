@@ -87,8 +87,12 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-    return {"cart_id": 1}
+    #Customer.# implement customer stuff once getting some data.
 
+    cart_id = len(carts) + 1
+    carts[cart_id] = new_cart
+    cart_items[cart_id] = {}
+    return {"cart_id": cart_id}
 
 class CartItem(BaseModel):
     quantity: int
@@ -97,7 +101,7 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-
+    
     return "OK"
 
 
