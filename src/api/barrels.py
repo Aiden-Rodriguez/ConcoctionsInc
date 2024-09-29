@@ -80,10 +80,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         quantity += 1
                         barrel.quantity -= 1
                         gold -= barrel.price
-                        
-    return [
-        {
-            "sku": sku,
-            "quantity": quantity,
-        }
-    ]
+    if sku == "":
+        return []
+    else:
+        return [
+            {
+                "sku": sku,
+                "quantity": quantity,
+            }
+        ]
