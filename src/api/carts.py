@@ -120,7 +120,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         num_green_potions = row['num_green_potions']
         gold = row['gold']
 
-        if num_green_potions > 1:
+        if num_green_potions >= 1:
             num_green_potions -= 1
             gold += 50
             with db.engine.begin() as connection:
