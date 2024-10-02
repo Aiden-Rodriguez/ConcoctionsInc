@@ -90,7 +90,15 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         ml_compare_list = [num_red_ml, num_green_ml, num_blue_ml, num_dark_ml]
         potion_compare_list = [num_red_potions, num_green_potions, num_blue_potions, num_dark_potions]
 
+
+        loop_counter = 0
+        max_iterations = 1000  # Arbitrary limit to prevent infinite loop
+
         while ml_total <= ml_capacity and HAVE_FUNDS == True:
+            loop_counter += 1
+            if loop_counter > max_iterations:
+                #looped too much prob bugged
+                return "Not Sigma loop"
             #get index of lowest ml count / pots   
             min_value_ml = min(ml_compare_list)
             min_indexes_ml = [i for i, num in enumerate(ml_compare_list) if num == min_value_ml]
