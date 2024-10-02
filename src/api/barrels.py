@@ -99,15 +99,16 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             if loop_counter > max_iterations:
                 #looped too much prob bugged
                 return "Not Sigma loop"
+            
             #get index of lowest ml count / pots   
             min_value_ml = min(ml_compare_list)
             min_indexes_ml = [i for i, num in enumerate(ml_compare_list) if num == min_value_ml]
             min_value_potion = min(potion_compare_list)
             min_indexes_potion = [i for i, num in enumerate(potion_compare_list) if num == min_value_potion]
             for barrel in wholesale_catalog:
-                if barrel.price > gold:
-                    HAVE_FUNDS = False
-                    break
+                # if barrel.price > gold:
+                #     HAVE_FUNDS = False
+                #     break
 
                 #handle buying based on lowest potion count currently.
                 #red
@@ -119,6 +120,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         ml_total += barrel.ml_per_barrel
                         num_red_ml += barrel.ml_per_barrel
                         add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                        HAVE_FUNDS = False
                 #green
                 elif 1 in min_indexes_potion and barrel.potion_type == [0,1,0,0]:
                     while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_green_ml <= 500:
@@ -128,6 +130,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         ml_total += barrel.ml_per_barrel
                         num_green_ml += barrel.ml_per_barrel
                         add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                        HAVE_FUNDS = False
                 #blue
                 elif 2 in min_indexes_potion and barrel.potion_type == [0,0,1,0]:
                     while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_blue_ml <= 500:
@@ -137,6 +140,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         ml_total += barrel.ml_per_barrel
                         num_blue_ml += barrel.ml_per_barrel
                         add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                        HAVE_FUNDS = False
                 #dark
                 elif 3 in min_indexes_potion and barrel.potion_type == [0,0,0,1]:
                     while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_dark_ml <= 500:
@@ -146,6 +150,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         ml_total += barrel.ml_per_barrel
                         num_dark_ml += barrel.ml_per_barrel
                         add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                        HAVE_FUNDS = False
         return buying_list
                 
         # if num_green_potions < 10 :
