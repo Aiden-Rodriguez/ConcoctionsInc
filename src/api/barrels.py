@@ -85,62 +85,84 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         buying_list = []
 
-        # Continue purchasing while there is capacity and funds
-        while ml_total <= ml_capacity and gold > 0:
-            purchased_any = False  # Flag to check if any barrel was purchased in this iteration
+        # List to keep track of potion counts and ml counts
+        potion_compare_list = [num_red_potions, num_green_potions, num_blue_potions, num_dark_potions]
+        ml_compare_list = [num_red_ml, num_green_ml, num_blue_ml, num_dark_ml]
+
+        loop_counter = 0
+        max_iterations = 1000  # Arbitrary limit to prevent infinite loop
+
+        while ml_total < ml_capacity and gold > 0:
+            loop_counter += 1
+            if loop_counter > max_iterations:
+                return "Not Sigma loop"
             
+            # Get indexes of potion type with the lowest counts
+            min_value_potion = min(potion_compare_list)
+            min_indexes_potion = [i for i, num in enumerate(potion_compare_list) if num == min_value_potion]
+
+            purchased_any = False
+
+            # Priority buying based on potion types
             for barrel in wholesale_catalog:
-                # Skip barrels if insufficient funds or quantity
-                if barrel.price > gold or barrel.quantity <= 0:
-                    continue
-                
-                # Check potion type and current ml counts
-                if barrel.potion_type == [1, 0, 0, 0] and num_red_ml < 500:  # Red
-                    while barrel.quantity > 0 and ml_total + barrel.ml_per_barrel <= ml_capacity and gold >= barrel.price and num_red_ml < 500:
-                        sku = barrel.sku
-                        barrel.quantity -= 1
-                        gold -= barrel.price
-                        ml_total += barrel.ml_per_barrel
-                        num_red_ml += barrel.ml_per_barrel
-                        add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
-                        purchased_any = True
-                
-                elif barrel.potion_type == [0, 1, 0, 0] and num_green_ml < 500:  # Green
-                    while barrel.quantity > 0 and ml_total + barrel.ml_per_barrel <= ml_capacity and gold >= barrel.price and num_green_ml < 500:
-                        sku = barrel.sku
-                        barrel.quantity -= 1
-                        gold -= barrel.price
-                        ml_total += barrel.ml_per_barrel
-                        num_green_ml += barrel.ml_per_barrel
-                        add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
-                        purchased_any = True
-                
-                elif barrel.potion_type == [0, 0, 1, 0] and num_blue_ml < 500:  # Blue
-                    while barrel.quantity > 0 and ml_total + barrel.ml_per_barrel <= ml_capacity and gold >= barrel.price and num_blue_ml < 500:
-                        sku = barrel.sku
-                        barrel.quantity -= 1
-                        gold -= barrel.price
-                        ml_total += barrel.ml_per_barrel
-                        num_blue_ml += barrel.ml_per_barrel
-                        add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
-                        purchased_any = True
-                
-                elif barrel.potion_type == [0, 0, 0, 1] and num_dark_ml < 500:  # Dark
-                    while barrel.quantity > 0 and ml_total + barrel.ml_per_barrel <= ml_capacity and gold >= barrel.price and num_dark_ml < 500:
-                        sku = barrel.sku
-                        barrel.quantity -= 1
-                        gold -= barrel.price
-                        ml_total += barrel.ml_per_barrel
-                        num_dark_ml += barrel.ml_per_barrel
-                        add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
-                        purchased_any = True
+                # Determine the current potion type and its corresponding index
+                potion_type_index = -1
+                if barrel.potion_type == [1, 0, 0, 0]:  # Red
+                    potion_type_index = 0
+                elif barrel.potion_type == [0, 1, 0, 0]:  # Green
+                    potion_type_index = 1
+                elif barrel.potion_type == [0, 0, 1, 0]:  # Blue
+                    potion_type_index = 2
+                elif barrel.potion_type == [0, 0, 0, 1]:  # Dark
+                    potion_type_index = 3
+
+                # Handle buying based on potion availability and lowest potion count
+                if potion_type_index in min_indexes_potion:
+                    while barrel.quantity > 0 and ml_total + barrel.ml_per_barrel <= ml_capacity and gold >= barrel.price:
+                        # Adjust ML tracking based on potion type
+                        if potion_type_index == 0:  # Red
+                            if num_red_ml < 500:
+                                sku = barrel.sku
+                                barrel.quantity -= 1
+                                gold -= barrel.price
+                                ml_total += barrel.ml_per_barrel
+                                num_red_ml += barrel.ml_per_barrel
+                                add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                                purchased_any = True
+                        elif potion_type_index == 1:  # Green
+                            if num_green_ml < 500:
+                                sku = barrel.sku
+                                barrel.quantity -= 1
+                                gold -= barrel.price
+                                ml_total += barrel.ml_per_barrel
+                                num_green_ml += barrel.ml_per_barrel
+                                add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                                purchased_any = True
+                        elif potion_type_index == 2:  # Blue
+                            if num_blue_ml < 500:
+                                sku = barrel.sku
+                                barrel.quantity -= 1
+                                gold -= barrel.price
+                                ml_total += barrel.ml_per_barrel
+                                num_blue_ml += barrel.ml_per_barrel
+                                add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                                purchased_any = True
+                        elif potion_type_index == 3:  # Dark
+                            if num_dark_ml < 500:
+                                sku = barrel.sku
+                                barrel.quantity -= 1
+                                gold -= barrel.price
+                                ml_total += barrel.ml_per_barrel
+                                num_dark_ml += barrel.ml_per_barrel
+                                add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                                purchased_any = True
             
-            # If no barrels were purchased in this iteration, exit the loop
+            # Break the loop if no barrels were purchased in this iteration
             if not purchased_any:
                 break
 
-
         return buying_list
+
                 
         # if num_green_potions < 10 :
         #     #check all barrels for green
