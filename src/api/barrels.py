@@ -67,9 +67,9 @@ def add_or_increment_item(item_list, new_item):
         if item['sku'] == new_item['sku']:
             #increment the quantity by the value of the new item
             item['quantity'] += new_item['quantity']
-            return  # Exit the function after updating
+            return
 
-    # If the item does not exist, add it to the list
+    #if the item does not exist, add it to the list
     item_list.append(new_item)
 
 # Gets called once a day
