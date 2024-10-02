@@ -139,6 +139,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             if not purchased_any:
                 break
 
+
         return buying_list
                 
         # if num_green_potions < 10 :
