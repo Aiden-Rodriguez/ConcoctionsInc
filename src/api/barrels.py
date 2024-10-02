@@ -28,12 +28,16 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     # interact with db
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, gold FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_red_ml, num_dark_ml, num_blue_ml, gold FROM global_inventory"))
         row = result.mappings().one()  # Using mappings to access the columns by name
 
         # Extract values from the row
         
         num_green_ml = row['num_green_ml']
+        num_red_ml = row['num_red_ml']
+        num_blue_ml = row['num_blue_ml']
+        num_dark_ml = row['num_dark_ml']
+        
         gold = row['gold']
 
         for barrel in barrels_delivered :
@@ -160,18 +164,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 break
 
         return buying_list
-                
-        # if num_green_potions < 10 :
-        #     #check all barrels for green
-        #     for barrel in wholesale_catalog :
-        #         # for green barrels
-        #         if barrel.potion_type == [0,1,0,0]:
-        #             #buy barrels until out of money or none are left
-        #             while barrel.price <= gold and barrel.quantity > 0:
-        #                 sku = barrel.sku
-        #                 quantity += 1
-        #                 barrel.quantity -= 1
-        #                 gold -= barrel.price
+
     # return [
     #     {
     #             "sku": sku,
