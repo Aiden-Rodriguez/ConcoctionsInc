@@ -42,14 +42,21 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
         for barrel in barrels_delivered :
             gold -= barrel.price * barrel.quantity
-            num_green_ml += barrel.ml_per_barrel * barrel.quantity
-        
+            if barrel.potion_type == [1,0,0,0]:
+                num_red_ml += barrel.ml_per_barrel * barrel.quantity
+            if barrel.potion_type == [0,1,0,0]:
+                num_green_ml += barrel.ml_per_barrel * barrel.quantity
+            if barrel.potion_type == [0,0,1,0]:
+                num_blue_ml += barrel.ml_per_barrel * barrel.quantity
+            if barrel.potion_type == [0,0,0,1]:
+                num_dark_ml += barrel.ml_per_barrel * barrel.quantity
 
+    
         with db.engine.begin() as connection:
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :additional_green_ml, gold = :gold;"),
-                                {"additional_green_ml": num_green_ml, "gold": gold})
+            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :num_green_ml, num_red_ml = :num_red_ml, num_blue_ml = :num_blue_ml, num_dark_ml = :num_dark_ml, gold = :gold;"),
+                                {"num_green_ml": num_green_ml, "num_red_ml": num_red_ml, "num_blue_ml": num_blue_ml,"num_dark_ml": num_dark_ml, "gold": gold})
     """ """
-    #print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
+    print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
 

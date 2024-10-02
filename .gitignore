@@ -5,3 +5,4 @@ __pycache__
 /.env
 info.log
 test.py
+.venv
