@@ -119,20 +119,65 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT gold, num_green_potions, num_red_potions, num_blue_potions, num_dark_potions FROM global_inventory"))
 
         row = result.mappings().one()  # Using mappings to access the columns by name
-
-        # Extract values from the row
-        num_green_potions = row['num_green_potions']
         gold = row['gold']
+        inv_green_potions = row['num_green_potions']
+        inv_blue_potions = row['num_blue_potions']
+        inv_red_potions = row['num_red_potions']
+        inv_dark_potions = row['num_dark_potions']
+        # Extract values from the row
 
-        if num_green_potions >= 1:
+        buying_list = []
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions, num_dark_potions FROM order_table WHERE id = :order_id"),
+        {"order_id": cart_id})
+
+        row = result.mappings().one()  # Using mappings to access the columns by name
+        num_green_potions = row['num_green_potions']
+        num_blue_potions = row['num_blue_potions']
+        num_red_potions = row['num_red_potions']
+        num_dark_potions = row['num_dark_potions']
+
+        total_potions_bought = 0
+        total_gold_paid = 0
+
+        while num_red_potions >= 1:
+            num_red_potions -= 1
+            total_potions_bought += 1
+            total_gold_paid += 50
+        while num_green_potions >= 1:
             num_green_potions -= 1
-            gold += 50
-            with db.engine.begin() as connection:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = :num_green_potions, gold = :gold;"),
-                {"num_green_potions": num_green_potions, "gold": gold})
-                return {"total_potions_bought": 1, "total_gold_paid": 50}            
-        else:
-            return {}
+            total_potions_bought += 1
+            total_gold_paid += 50
+        while num_blue_potions >= 1:
+            num_blue_potions -= 1
+            total_potions_bought += 1
+            total_gold_paid += 50
+        while num_dark_potions >= 1:
+            num_dark_potions -= 1
+            total_potions_bought += 1
+            total_gold_paid += 50
+
+        potions_ud_g = inv_green_potions - row['num_green_potions']
+        potions_ud_b = inv_blue_potions - row['num_blue_potions']
+        potions_ud_r = inv_red_potions - row['num_red_potions']
+        potions_ud_d = inv_dark_potions - row['num_dark_potions']
+
+        gold += total_gold_paid
+        with db.engine.begin() as connection:
+            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = :num_green_potions,  num_red_potions = :num_red_potions, num_blue_potions = :num_blue_potions, num_dark_potions = :num_dark_potions, gold = :gold;"),
+            {"num_green_potions": potions_ud_g, "num_red_potions": potions_ud_r, "num_blue_potions": potions_ud_b, "num_dark_potions": potions_ud_d, "gold": gold})
+
+        print(cart_checkout)
+
+        return {"total_potions_bought": total_potions_bought, "total_gold_paid": total_gold_paid}
+        # if num_green_potions >= 1:
+        #     num_green_potions -= 1
+        #     gold += 50
+        #     with db.engine.begin() as connection:
+        #         connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = :num_green_potions, gold = :gold;"),
+        #         {"num_green_potions": num_green_potions, "gold": gold})
+        #         return {"total_potions_bought": 1, "total_gold_paid": 50}            
+        # else:
+        #     return {}
