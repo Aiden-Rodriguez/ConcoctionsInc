@@ -23,10 +23,13 @@ def get_catalog():
 
         catalogue_list = []
         #current logic: list all potions of 4 major types
+        #potion names are a temp implementation ; currently they just reflect what is called in the database
+        #in the future call potions the following:
+        # Potion_x-x-x-x where x is the amount of colored ml respectively
         if num_green_potions > 0:
             catalogue_list.append(
                 {
-                    "sku": "GREEN_POTION_0",
+                    "sku": "num_green_potions",
                     "name": "green potion",
                     "quantity": num_green_potions,
                     "price": 50,
@@ -35,7 +38,7 @@ def get_catalog():
         if num_red_potions > 0:
             catalogue_list.append(
                 {
-                    "sku": "RED_POTION_0",
+                    "sku": "num_red_potions",
                     "name": "red potion",
                     "quantity": num_red_potions,
                     "price": 50,
@@ -44,7 +47,7 @@ def get_catalog():
         if num_blue_potions > 0:
             catalogue_list.append(
                 {
-                    "sku": "BLUE_POTION_0",
+                    "sku": "num_blue_potions",
                     "name": "blue potion",
                     "quantity": num_blue_potions,
                     "price": 50,
@@ -53,7 +56,7 @@ def get_catalog():
         if num_dark_potions > 0:
             catalogue_list.append(
                 {
-                    "sku": "DARK_POTION_0",
+                    "sku": "num_dark_potions",
                     "name": "dark potion",
                     "quantity": num_dark_potions,
                     "price": 50,
