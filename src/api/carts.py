@@ -90,18 +90,12 @@ def create_cart(new_cart: Customer):
     #Customer.# implement customer stuff once getting some data.
     with db.engine.begin() as connection:
         #create order in db
-        result = connection.execute(sqlalchemy.text("INSERT INTO order_table (num_green_potions, num_red_potions, num_blue_potions, num_dark_potions) VALUES (:num_green_potions, :num_red_potions, :num_blue_potions, :num_dark_potions)"),
-        {
-            "num_green_potions": 10,  
-            "num_red_potions": 50, 
-            "num_blue_potions": 11,
-            "num_dark_potions": 12
-        })
-        #order_id = result.scalar()
-        connection.execute(sqlalchemy.text("UPDATE order_table SET customer_class = :customer_class, customer_level = :customer_level, customer_name = :customer_name"),
-                            {"customer_class": new_cart.character_class, "customer_level": new_cart.level, "customer_name": new_cart.customer_name}
+        result = connection.execute(sqlalchemy.text("INSERT INTO order_table DEFAULT VALUES RETURNING id"))
+        order_id = result.scalar()
+        connection.execute(sqlalchemy.text("UPDATE order_table SET customer_class = :customer_class, customer_level = :customer_level, customer_name = :customer_name WHERE id = :order_id"),
+                            {"customer_class": new_cart.character_class, "customer_level": new_cart.level, "customer_name": new_cart.customer_name, "order_id": order_id}
                            )
-    return {"cart_id": 1}
+    return {"cart_id": order_id}
 
 class CartItem(BaseModel):
     quantity: int
@@ -110,8 +104,11 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-
-    #?
+    query = f"UPDATE order_table SET {item_sku} = :quantity WHERE id = :order_id"
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text(query),
+                {"order_id": cart_id, "quantity": cart_item.quantity}
+                )
     return "OK"
 
 
