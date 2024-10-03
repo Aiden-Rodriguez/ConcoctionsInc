@@ -88,9 +88,19 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     """ """
     #Customer.# implement customer stuff once getting some data.
-
-    
-
+    with db.engine.begin() as connection:
+        #create order in db
+        result = connection.execute(sqlalchemy.text("INSERT INTO order_table (num_green_potions, num_red_potions, num_blue_potions, num_dark_potions) VALUES (:num_green_potions, :num_red_potions, :num_blue_potions, :num_dark_potions)"),
+        {
+            "num_green_potions": 10,  
+            "num_red_potions": 50, 
+            "num_blue_potions": 11,
+            "num_dark_potions": 12
+        })
+        #order_id = result.scalar()
+        connection.execute(sqlalchemy.text("UPDATE order_table SET customer_class = :customer_class, customer_level = :customer_level, customer_name = :customer_name"),
+                            {"customer_class": new_cart.character_class, "customer_level": new_cart.level, "customer_name": new_cart.customer_name}
+                           )
     return {"cart_id": 1}
 
 class CartItem(BaseModel):
