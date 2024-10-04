@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
+import sqlalchemy
+from src import database as db
 
 router = APIRouter(
     prefix="/info",
@@ -18,5 +20,11 @@ def post_time(timestamp: Timestamp):
     Share current time.
     """
     print(timestamp)
+
+    time = timestamp.hour
+    day = timestamp.day
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("UPDATE date SET day = :day, time = :time"),
+                           {"day": day, "time": time})
     return "OK"
 

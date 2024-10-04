@@ -80,7 +80,6 @@ def post_visits(visit_id: int, customers: list[Customer]):
     Which customers visited the shop today?
     """
     print(customers)
-
     return "OK"
 
 
@@ -92,8 +91,12 @@ def create_cart(new_cart: Customer):
         #create order in db
         result = connection.execute(sqlalchemy.text("INSERT INTO order_table DEFAULT VALUES RETURNING id"))
         order_id = result.scalar()
-        connection.execute(sqlalchemy.text("UPDATE order_table SET customer_class = :customer_class, customer_level = :customer_level, customer_name = :customer_name WHERE id = :order_id"),
-                            {"customer_class": new_cart.character_class, "customer_level": new_cart.level, "customer_name": new_cart.customer_name, "order_id": order_id}
+        result = connection.execute(sqlalchemy.text("SELECT day, time FROM date"))
+        row = result.mappings().one()
+        day = row['day']
+        time = row['time']
+        connection.execute(sqlalchemy.text("UPDATE order_table SET customer_class = :customer_class, customer_level = :customer_level, customer_name = :customer_name, day = :day, time = :time WHERE id = :order_id"),
+                            {"customer_class": new_cart.character_class, "customer_level": new_cart.level, "customer_name": new_cart.customer_name, "order_id": order_id, "time": time, "day": day}
                            )
     return {"cart_id": order_id}
 
