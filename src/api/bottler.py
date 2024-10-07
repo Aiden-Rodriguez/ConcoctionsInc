@@ -20,7 +20,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     """ """
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_green_potions, num_red_ml, num_red_potions, num_blue_ml, num_blue_potions, num_dark_ml, num_dark_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_green_potions, num_red_ml, num_red_potions, num_blue_ml, num_blue_potions, num_dark_ml, num_dark_potions, potion_capacity FROM global_inventory"))
         row = result.mappings().one()  # Using mappings to access the columns by name
 
         # Extract values from the row
@@ -33,15 +33,18 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         num_blue_potions = row['num_blue_potions']
         num_dark_ml = row['num_dark_ml']
         num_dark_potions = row['num_dark_potions']
+        potion_capacity = row['potion_capacity']
 
         quan_g = num_green_potions
         quan_r = num_red_potions
         quan_b = num_blue_potions
         quan_d = num_dark_potions
 
+        potions_total = num_blue_potions + num_green_potions + num_dark_potions + num_red_potions
+
 
         for potion in potions_delivered :
-            if potion.potion_type == [0, 100, 0, 0] :
+            if potion.potion_type == [0, 100, 0, 0]:
                 quan_g = potion.quantity + num_green_potions
                 num_green_ml = num_green_ml - 100*potion.quantity
             elif potion.potion_type == [100, 0, 0, 0] :
@@ -76,15 +79,23 @@ def get_bottle_plan():
     Go from barrel to bottle.
     """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_red_ml, num_blue_ml, num_dark_ml FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_red_ml, num_blue_ml, num_dark_ml, potion_capacity, num_green_potions, num_red_potions, num_blue_potions, num_dark_potions FROM global_inventory"))
 
         row = result.mappings().one()  # Using mappings to access the columns by name
 
         # Extract values from the row
         num_green_ml = row['num_green_ml']
-        num_blue_ml = row['num_blue_ml']
+        num_green_potions = row['num_green_potions']
         num_red_ml = row['num_red_ml']
+        num_red_potions = row['num_red_potions']
+        num_blue_ml = row['num_blue_ml']
+        num_blue_potions = row['num_blue_potions']
         num_dark_ml = row['num_dark_ml']
+        num_dark_potions = row['num_dark_potions']
+        potion_capacity = row['potion_capacity']
+
+        total_potion_amount = num_blue_potions + num_dark_potions + num_green_potions + num_red_potions
+    
         #implement support for many pots later
         potion_list = []
         green = [0,100,0,0]
@@ -93,17 +104,21 @@ def get_bottle_plan():
         dark = [0,0,0,100]
 
         #convert all into green pots
-        while num_green_ml >= 100 :
+        while num_green_ml >= 100 and total_potion_amount < potion_capacity:
             num_green_ml -= 100
+            total_potion_amount += 1
             add_or_increment_item(potion_list, {'potion_type': green, 'quantity': 1})
-        while num_red_ml >= 100 :
+        while num_red_ml >= 100 and total_potion_amount < potion_capacity:
             num_red_ml -= 100
+            total_potion_amount += 1
             add_or_increment_item(potion_list, {'potion_type': red, 'quantity': 1})
-        while num_blue_ml >= 100 :
+        while num_blue_ml >= 100 and total_potion_amount < potion_capacity:
             num_blue_ml -= 100
+            total_potion_amount += 1
             add_or_increment_item(potion_list, {'potion_type': blue, 'quantity': 1})
-        while num_dark_ml >= 100 :
+        while num_dark_ml >= 100 and total_potion_amount < potion_capacity:
             num_dark_ml -= 100
+            total_potion_amount += 1
             add_or_increment_item(potion_list, {'potion_type': dark, 'quantity': 1})
 
         return potion_list
