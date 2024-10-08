@@ -56,8 +56,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             elif potion.potion_type == [0, 0, 0, 100] :
                 quan_d = potion.quantity + num_dark_potions
                 num_dark_ml = num_dark_ml - 100*potion.quantity
-        with db.engine.begin() as connection:
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :num_green_ml, num_green_potions = :quan_g, num_red_ml = :num_red_ml, num_red_potions = :quan_r, num_blue_ml = :num_blue_ml, num_blue_potions = :quan_b, num_dark_ml = :num_dark_ml, num_dark_potions = :quan_d;"),
+        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :num_green_ml, num_green_potions = :quan_g, num_red_ml = :num_red_ml, num_red_potions = :quan_r, num_blue_ml = :num_blue_ml, num_blue_potions = :quan_b, num_dark_ml = :num_dark_ml, num_dark_potions = :quan_d;"),
                                 {"num_green_ml": num_green_ml, "quan_g": quan_g, "num_red_ml": num_red_ml, "quan_r": quan_r, "num_blue_ml": num_blue_ml, "quan_b": quan_b, "num_dark_ml": num_dark_ml, "quan_d": quan_d})
     return "OK"
 
