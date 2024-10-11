@@ -74,8 +74,6 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             
             connection.execute(sqlalchemy.text("INSERT INTO potion_order_table (potion_order_id, num_red_potions, num_green_potions, num_blue_potions, num_dark_potions) VALUES (:potion_order_id, :num_red_potions, :num_green_potions, :num_blue_potions, :num_dark_potions)"),
                {"potion_order_id": order_id, "num_red_potions": pot_r, "num_green_potions": pot_g, "num_blue_potions": pot_b, "num_dark_potions": pot_d})  
-            # connection.execute(sqlalchemy.text("INSERT INTO potion_order_table (potion_order_id) VALUES (:potion_order_id"),
-            #    {"potion_order_id": order_id})  
             
             print(f"potions delievered: {potions_delivered} order_id: {order_id}")
             return "OK"
