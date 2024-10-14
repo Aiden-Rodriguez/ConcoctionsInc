@@ -89,13 +89,19 @@ def create_cart(new_cart: Customer):
     #Customer.# implement customer stuff once getting some data.
     with db.engine.begin() as connection:
         #create order in db
-        result = connection.execute(sqlalchemy.text("INSERT INTO order_table DEFAULT VALUES RETURNING id"))
+        result = connection.execute(sqlalchemy.text("""INSERT INTO order_table DEFAULT VALUES 
+                                                    RETURNING id"""))
         order_id = result.scalar()
-        result = connection.execute(sqlalchemy.text("SELECT day, time FROM date"))
+        result = connection.execute(sqlalchemy.text("""SELECT day, time 
+                                                    FROM date"""))
         row = result.mappings().one()
         day = row['day']
         time = row['time']
-        connection.execute(sqlalchemy.text("UPDATE order_table SET customer_class = :customer_class, customer_level = :customer_level, customer_name = :customer_name, day = :day, time = :time, transaction_occurred = :transaction_occurred WHERE id = :order_id"),
+        connection.execute(sqlalchemy.text("""UPDATE order_table 
+                                           SET customer_class = :customer_class, customer_level = :customer_level, 
+                                           customer_name = :customer_name, day = :day, time = :time, 
+                                           transaction_occurred = :transaction_occurred 
+                                           WHERE id = :order_id"""),
                             {"customer_class": new_cart.character_class, "customer_level": new_cart.level, "customer_name": new_cart.customer_name, "order_id": order_id, "time": time, "day": day, "transaction_occurred": False}
                            )
     return {"cart_id": order_id}
@@ -123,12 +129,15 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT transaction_occurred FROM order_table WHERE id = :order_id"),
+        result = connection.execute(sqlalchemy.text("""SELECT transaction_occurred 
+                                                    FROM order_table 
+                                                    WHERE id = :order_id"""),
         {"order_id": cart_id})
         row = result.mappings().one()
         transaction_occured = row['transaction_occurred']
 
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions, num_dark_potions FROM order_table WHERE id = :order_id"),
+        result = connection.execute(sqlalchemy.text("""SELECT num_green_potions, num_red_potions, num_blue_potions, num_dark_potions 
+                                                    FROM order_table WHERE id = :order_id"""),
         {"order_id": cart_id})
 
 
@@ -167,7 +176,8 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             total_potions_bought_d += 1
 
         if transaction_occured == False:
-            result = connection.execute(sqlalchemy.text("SELECT gold, num_green_potions, num_red_potions, num_blue_potions, num_dark_potions FROM global_inventory"))
+            result = connection.execute(sqlalchemy.text("""SELECT gold, num_green_potions, num_red_potions, num_blue_potions, num_dark_potions 
+                                                        FROM global_inventory"""))
 
             row = result.mappings().one()  # Using mappings to access the columns by name
             gold = row['gold']
@@ -181,12 +191,19 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             potions_ud_d = row['num_dark_potions'] - total_potions_bought_d
 
             gold += total_gold_paid
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = :num_green_potions,  num_red_potions = :num_red_potions, num_blue_potions = :num_blue_potions, num_dark_potions = :num_dark_potions, gold = :gold;"),
+            connection.execute(sqlalchemy.text("""UPDATE global_inventory 
+                                               SET num_green_potions = :num_green_potions,  
+                                               num_red_potions = :num_red_potions, 
+                                               num_blue_potions = :num_blue_potions, 
+                                               num_dark_potions = :num_dark_potions, 
+                                               gold = :gold;"""),
             {"num_green_potions": potions_ud_g, "num_red_potions": potions_ud_r, "num_blue_potions": potions_ud_b, "num_dark_potions": potions_ud_d, "gold": gold})
 
             print(cart_checkout)
 
-            connection.execute(sqlalchemy.text("UPDATE order_table SET transaction_occurred = :transaction_occurred WHERE id = :order_id"),
+            connection.execute(sqlalchemy.text("""UPDATE order_table 
+                                               SET transaction_occurred = :transaction_occurred 
+                                               WHERE id = :order_id"""),
                            {"transaction_occurred": True, "order_id": cart_id})
             return {"total_potions_bought": total_potions_bought, "total_gold_paid": total_gold_paid}
         else: # This means the transaction has already happened --- concurrency error

@@ -24,7 +24,8 @@ def post_time(timestamp: Timestamp):
     time = timestamp.hour
     day = timestamp.day
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("UPDATE date SET day = :day, time = :time"),
+        connection.execute(sqlalchemy.text("""UPDATE date 
+                                           SET day = :day, time = :time"""),
                            {"day": day, "time": time})
     return "OK"
 

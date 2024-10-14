@@ -11,7 +11,8 @@ def get_catalog():
     Each unique item combination must have only a single price.
     """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_blue_potions, num_red_potions, num_dark_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("""SELECT num_green_potions, num_blue_potions, num_red_potions, num_dark_potions 
+                                                    FROM global_inventory"""))
 
         row = result.mappings().one()  # Using mappings to access the columns by name
 

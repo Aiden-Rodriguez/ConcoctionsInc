@@ -28,7 +28,9 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     # interact with db
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT EXISTS(SELECT 1 FROM barrel_order_table WHERE barrel_order_id = :barrel_order_id)"), 
+        result = connection.execute(sqlalchemy.text("""SELECT EXISTS
+                                                    (SELECT 1 FROM barrel_order_table 
+                                                    WHERE barrel_order_id = :barrel_order_id)"""), 
                                     {"barrel_order_id": order_id})
         #if the row exists, this transaction has already happened!! bad!
         row = result.scalar()
@@ -36,7 +38,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             return "OK"
         else: # if no exist then go ahead and change the db!
 
-            result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_red_ml, num_dark_ml, num_blue_ml, gold FROM global_inventory"))
+            result = connection.execute(sqlalchemy.text("""SELECT num_green_ml, num_red_ml, num_dark_ml, num_blue_ml, gold 
+                                                        FROM global_inventory"""))
             row = result.mappings().one()  # Using mappings to access the columns by name
 
             # Extract values from the row
@@ -69,11 +72,15 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                     purchasing_d += barrel.ml_per_barrel * barrel.quantity
 
 
-            connection.execute(sqlalchemy.text("INSERT INTO barrel_order_table (barrel_order_id, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, gold) VALUES (:barrel_order_id, :num_red_ml, :num_green_ml, :num_blue_ml, :num_dark_ml, :gold_paying)"),
+            connection.execute(sqlalchemy.text("""INSERT INTO barrel_order_table 
+                                               (barrel_order_id, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, gold) 
+                                               VALUES 
+                                               (:barrel_order_id, :num_red_ml, :num_green_ml, :num_blue_ml, :num_dark_ml, :gold_paying)"""),
                                {"barrel_order_id": order_id, "num_red_ml": purchasing_r, "num_green_ml": purchasing_g, "num_blue_ml": purchasing_b, "num_dark_ml": purchasing_d, "gold_paying": gold_paying})  
         
     
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = :num_green_ml, num_red_ml = :num_red_ml, num_blue_ml = :num_blue_ml, num_dark_ml = :num_dark_ml, gold = :gold;"),
+            connection.execute(sqlalchemy.text("""UPDATE global_inventory 
+                                               SET num_green_ml = :num_green_ml, num_red_ml = :num_red_ml, num_blue_ml = :num_blue_ml, num_dark_ml = :num_dark_ml, gold = :gold;"""),
                                 {"num_green_ml": num_green_ml, "num_red_ml": num_red_ml, "num_blue_ml": num_blue_ml,"num_dark_ml": num_dark_ml, "gold": gold})
         
             print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
@@ -97,7 +104,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     #interact with db
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_blue_potions, num_red_potions, num_dark_potions, num_green_ml, num_blue_ml, num_red_ml, num_dark_ml, gold, ml_capacity FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("""SELECT num_green_potions, num_blue_potions, num_red_potions, num_dark_potions, 
+                                                    num_green_ml, num_blue_ml, num_red_ml, num_dark_ml, gold, ml_capacity 
+                                                    FROM global_inventory"""))
 
         row = result.mappings().one()  # Using mappings to access the columns by name
 
