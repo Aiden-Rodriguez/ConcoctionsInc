@@ -185,19 +185,14 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
             buying_list = []
 
-            potions_ud_g = row['num_green_potions'] - total_potions_bought_g
-            potions_ud_b = row['num_blue_potions'] - total_potions_bought_b
-            potions_ud_r = row['num_red_potions'] - total_potions_bought_r
-            potions_ud_d = row['num_dark_potions'] - total_potions_bought_d
-
             gold += total_gold_paid
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                               SET num_green_potions = :num_green_potions,  
-                                               num_red_potions = :num_red_potions, 
-                                               num_blue_potions = :num_blue_potions, 
-                                               num_dark_potions = :num_dark_potions, 
-                                               gold = :gold;"""),
-            {"num_green_potions": potions_ud_g, "num_red_potions": potions_ud_r, "num_blue_potions": potions_ud_b, "num_dark_potions": potions_ud_d, "gold": gold})
+                                               SET num_green_potions = num_green_potions - :num_green_potions_bought,  
+                                               num_red_potions = num_red_potions - :num_red_potions_bought,
+                                               num_blue_potions = num_blue_potions - :num_blue_potions_bought,
+                                               num_dark_potions = num_dark_potions - :num_dark_potions_bought, 
+                                               gold = gold + :gold_change;"""),
+            {"num_green_potions_bought": total_potions_bought_g, "num_red_potions_bought": total_potions_bought_r, "num_blue_potions_bought": total_potions_bought_b, "num_dark_potions_bought": total_potions_bought_d, "gold_change": total_gold_paid})
 
             print(cart_checkout)
 
