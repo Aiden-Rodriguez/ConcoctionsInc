@@ -89,24 +89,23 @@ def create_cart(new_cart: Customer):
     #Customer.# implement customer stuff once getting some data.
     with db.engine.begin() as connection:
         #create order in db
-        result = connection.execute(sqlalchemy.text("""INSERT INTO order_table DEFAULT VALUES 
+        result = connection.execute(sqlalchemy.text("""INSERT INTO cart_order_table DEFAULT VALUES 
                                                     RETURNING id"""))
         order_id = result.scalar()
         #grab the most recent time period
-        result = connection.execute(sqlalchemy.text("""SELECT day, time 
-                                               FROM date
-                                               ORDER BY day DESC, time DESC
-                                               LIMIT 1"""))
+        result = connection.execute(sqlalchemy.text("""SELECT id
+                                                        FROM DATE
+                                                        ORDER BY id DESC
+                                                        LIMIT 1"""))
+        time_id = result.scalar()
 
-        row = result.mappings().one()
-        day = row['day']
-        time = row['time']
-        connection.execute(sqlalchemy.text("""UPDATE order_table 
+        connection.execute(sqlalchemy.text("""UPDATE cart_order_table 
                                            SET customer_class = :customer_class, customer_level = :customer_level, 
-                                           customer_name = :customer_name, day = :day, time = :time, 
-                                           transaction_occurred = :transaction_occurred 
+                                           customer_name = :customer_name,
+                                           transaction_occurred = :transaction_occurred,
+                                           time_id = :time_id
                                            WHERE id = :order_id"""),
-                            {"customer_class": new_cart.character_class, "customer_level": new_cart.level, "customer_name": new_cart.customer_name, "order_id": order_id, "time": time, "day": day, "transaction_occurred": False}
+                            {"customer_class": new_cart.character_class, "customer_level": new_cart.level, "customer_name": new_cart.customer_name, "order_id": order_id, "transaction_occurred": False, "time_id": time_id}
                            )
     return {"cart_id": order_id}
 
@@ -117,7 +116,7 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-    query = f"UPDATE order_table SET {item_sku} = :quantity WHERE id = :order_id"
+    query = f"UPDATE cart_order_table SET {item_sku} = :quantity WHERE id = :order_id"
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text(query),
                 {"order_id": cart_id, "quantity": cart_item.quantity}
@@ -134,14 +133,14 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT transaction_occurred 
-                                                    FROM order_table 
+                                                    FROM cart_order_table 
                                                     WHERE id = :order_id"""),
         {"order_id": cart_id})
         row = result.mappings().one()
         transaction_occured = row['transaction_occurred']
 
         result = connection.execute(sqlalchemy.text("""SELECT num_green_potions, num_red_potions, num_blue_potions, num_dark_potions 
-                                                    FROM order_table WHERE id = :order_id"""),
+                                                    FROM cart_order_table WHERE id = :order_id"""),
         {"order_id": cart_id})
 
 
@@ -200,10 +199,11 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
             print(cart_checkout)
 
-            connection.execute(sqlalchemy.text("""UPDATE order_table 
-                                               SET transaction_occurred = :transaction_occurred 
+            connection.execute(sqlalchemy.text("""UPDATE cart_order_table 
+                                               SET transaction_occurred = :transaction_occurred
                                                WHERE id = :order_id"""),
                            {"transaction_occurred": True, "order_id": cart_id})
+            
             return {"total_potions_bought": total_potions_bought, "total_gold_paid": total_gold_paid}
         else: # This means the transaction has already happened --- concurrency error
             #still have to return the correct amount of stuff.
