@@ -23,9 +23,11 @@ def post_time(timestamp: Timestamp):
 
     time = timestamp.hour
     day = timestamp.day
+    
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("""UPDATE date 
-                                           SET day = :day, time = :time"""),
+        connection.execute(sqlalchemy.text("""INSERT INTO date (day, time)
+                                          VALUES (:day, :time)"""),
                            {"day": day, "time": time})
+        
     return "OK"
 

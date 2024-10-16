@@ -92,8 +92,12 @@ def create_cart(new_cart: Customer):
         result = connection.execute(sqlalchemy.text("""INSERT INTO order_table DEFAULT VALUES 
                                                     RETURNING id"""))
         order_id = result.scalar()
+        #grab the most recent time period
         result = connection.execute(sqlalchemy.text("""SELECT day, time 
-                                                    FROM date"""))
+                                               FROM date
+                                               ORDER BY day DESC, time DESC
+                                               LIMIT 1"""))
+
         row = result.mappings().one()
         day = row['day']
         time = row['time']
