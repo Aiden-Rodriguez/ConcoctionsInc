@@ -30,8 +30,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             result = connection.execute(sqlalchemy.text("""SELECT num_green_ml, num_green_potions, 
                                                         num_red_ml, num_red_potions, 
                                                         num_blue_ml, num_blue_potions, 
-                                                        num_dark_ml, num_dark_potions, p
-                                                        otion_capacity 
+                                                        num_dark_ml, num_dark_potions, 
+                                                        potion_capacity 
                                                         FROM global_inventory"""))
             row = result.mappings().one()  # Using mappings to access the columns by name
 
