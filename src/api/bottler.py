@@ -101,13 +101,13 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                                                SET num_green_ml = :num_green_ml,
                                                num_red_ml = :num_red_ml,
                                                num_blue_ml = :num_blue_ml,
-                                               num_dark_ml = :num_dark_ml,"""),
+                                               num_dark_ml = :num_dark_ml"""),
                                     {"num_green_ml": num_green_ml, "num_red_ml": num_red_ml, "num_blue_ml": num_blue_ml, "num_dark_ml": num_dark_ml})
             
             #kinda monkey mode but it works for now
             connection.execute(sqlalchemy.text("""
                 UPDATE potion_info_table 
-                    SET inventory = inventory + CASE 
+                    SET inventory = inventory - CASE 
                     WHEN potion_sku = 'red' THEN :num_red_potions_bought 
                     WHEN potion_sku = 'green' THEN :num_green_potions_bought 
                     WHEN potion_sku = 'blue' THEN :num_blue_potions_bought 
@@ -115,7 +115,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                     ELSE 0 
                 END
                 WHERE potion_sku IN ('red', 'green', 'blue', 'dark')"""), 
-                {"num_red_potions_bought": quan_r, "num_green_potions_bought": quan_g, "num_blue_potions_bought": quan_b, "num_dark_potions_bought": quan_d})
+                {"num_red_potions_bought": pot_r, "num_green_potions_bought": pot_g, "num_blue_potions_bought": pot_b, "num_dark_potions_bought": pot_d})
             
             connection.execute(sqlalchemy.text("""INSERT INTO potion_order_table 
                                                (potion_order_id, num_red_potions, num_green_potions, num_blue_potions, num_dark_potions) 
