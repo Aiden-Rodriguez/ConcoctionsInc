@@ -100,7 +100,8 @@ def create_cart(new_cart: Customer):
         time_id = result.scalar()
 
         connection.execute(sqlalchemy.text("""UPDATE cart_order_table 
-                                           SET customer_class = :customer_class, customer_level = :customer_level, 
+                                           SET customer_class = :customer_class, 
+                                           customer_level = :customer_level, 
                                            customer_name = :customer_name,
                                            transaction_occurred = :transaction_occurred,
                                            time_id = :time_id
@@ -116,13 +117,26 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-    query = f"UPDATE cart_order_table SET {item_sku} = :quantity WHERE id = :order_id"
-    with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(query),
-                {"order_id": cart_id, "quantity": cart_item.quantity}
-                )
-    return "OK"
+    # query = f"UPDATE cart_order_table SET {item_sku} = :quantity WHERE id = :order_id"
 
+    # with db.engine.begin() as connection:
+    #     connection.execute(sqlalchemy.text(query),
+    #             {"order_id": cart_id, "quantity": cart_item.quantity}
+    #             )
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT id
+                                           FROM potion_info_table
+                                           WHERE potion_sku = :item_sku
+                                           """),
+                {"item_sku": item_sku})
+        
+        potion_id = result.scalar()
+
+        connection.execute(sqlalchemy.text("""INSERT INTO carts (cart_id, potion_id, quantity)
+            VALUES (:cart_id, :potion_id, :quantity)"""), 
+            {"cart_id": cart_id, "potion_id": potion_id, "quantity": cart_item.quantity})
+    return "OK"
 
 class CartCheckout(BaseModel):
     payment: str
@@ -139,16 +153,38 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         row = result.mappings().one()
         transaction_occured = row['transaction_occurred']
 
-        result = connection.execute(sqlalchemy.text("""SELECT num_green_potions, num_red_potions, num_blue_potions, num_dark_potions 
-                                                    FROM cart_order_table WHERE id = :order_id"""),
+        result = connection.execute(sqlalchemy.text("""SELECT potion_id, quantity
+                                                    FROM carts 
+                                                    WHERE cart_id = :order_id"""),
         {"order_id": cart_id})
 
 
-        row = result.mappings().one()  # Using mappings to access the columns by name
-        num_green_potions = row['num_green_potions']
-        num_blue_potions = row['num_blue_potions']
-        num_red_potions = row['num_red_potions']
-        num_dark_potions = row['num_dark_potions']
+        rows = result.fetchall()
+        
+        pots = []
+        #where 0 is the potion id, 1 is the quantity
+        for row in rows:
+            pots.append([row[0], row[1]])
+
+        potion_ids = [pot[0] for pot in pots]
+
+        result = connection.execute(sqlalchemy.text("""SELECT id, potion_sku
+            FROM potion_info_table
+            WHERE id IN :potion_ids"""), 
+            {"potion_ids": tuple(potion_ids)})
+
+        rows = result.fetchall()
+
+        sku_quantity_mapping = {
+            row[1]: pots[potion_ids.index(row[0])][1]
+            for row in rows
+        }
+
+        #do it the stupid way for now
+        num_green_potions = sku_quantity_mapping.get("green", 0)
+        num_blue_potions = sku_quantity_mapping.get("blue", 0)
+        num_red_potions = sku_quantity_mapping.get("red", 0)
+        num_dark_potions = sku_quantity_mapping.get("dark", 0)
 
         total_potions_bought = 0
         total_potions_bought_r = 0

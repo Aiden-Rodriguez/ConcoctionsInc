@@ -51,33 +51,47 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         
             gold = row['gold']
             gold_paying = 0
-            purchasing_r = 0
-            purchasing_g = 0
-            purchasing_b = 0
-            purchasing_d = 0
+            barrels_to_insert = []
+
             for barrel in barrels_delivered :
                 gold -= barrel.price * barrel.quantity
                 gold_paying += barrel.price * barrel.quantity
                 if barrel.potion_type == [1,0,0,0]:
                     num_red_ml += barrel.ml_per_barrel * barrel.quantity
-                    purchasing_r += barrel.ml_per_barrel * barrel.quantity
+                    barrels_to_insert.append(([1,0,0,0], barrel.ml_per_barrel * barrel.quantity))  
                 if barrel.potion_type == [0,1,0,0]:
                     num_green_ml += barrel.ml_per_barrel * barrel.quantity
-                    purchasing_g += barrel.ml_per_barrel * barrel.quantity
+                    barrels_to_insert.append(([0,1,0,0], barrel.ml_per_barrel * barrel.quantity)) 
                 if barrel.potion_type == [0,0,1,0]:
                     num_blue_ml += barrel.ml_per_barrel * barrel.quantity
-                    purchasing_b += barrel.ml_per_barrel * barrel.quantity
+                    barrels_to_insert.append(([0,0,1,0], barrel.ml_per_barrel * barrel.quantity)) 
                 if barrel.potion_type == [0,0,0,1]:
                     num_dark_ml += barrel.ml_per_barrel * barrel.quantity
-                    purchasing_d += barrel.ml_per_barrel * barrel.quantity
+                    barrels_to_insert.append(([0,0,0,1], barrel.ml_per_barrel * barrel.quantity)) 
 
 
             connection.execute(sqlalchemy.text("""INSERT INTO barrel_order_table 
-                                               (barrel_order_id, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, gold) 
+                                               (barrel_order_id, gold_cost) 
                                                VALUES 
-                                               (:barrel_order_id, :num_red_ml, :num_green_ml, :num_blue_ml, :num_dark_ml, :gold_paying)"""),
-                               {"barrel_order_id": order_id, "num_red_ml": purchasing_r, "num_green_ml": purchasing_g, "num_blue_ml": purchasing_b, "num_dark_ml": purchasing_d, "gold_paying": gold_paying})  
-        
+                                               (:barrel_order_id, :gold_paying)"""),
+                               {"barrel_order_id": order_id, "gold_paying": gold_paying})  
+
+            result = connection.execute(sqlalchemy.text("""SELECT id
+                                                        FROM DATE
+                                                        ORDER BY id DESC
+                                                        LIMIT 1"""))
+            time_id = result.scalar()
+
+        if barrels_to_insert:
+            insert_values = ", ".join(
+                [f"(:barrel_order_id, :time_id, '{barrel_type}', {quantity_ml})" for barrel_type, quantity_ml in barrels_to_insert]
+            )
+
+            connection.execute(sqlalchemy.text(f"""INSERT INTO barrels 
+                                               (barrel_order_id, time_id, barrel_type, quantity_ml) 
+                                               VALUES {insert_values}"""),
+                               {"barrel_order_id": order_id, "time_id": time_id})
+
     
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
                                                SET num_green_ml = :num_green_ml, num_red_ml = :num_red_ml, num_blue_ml = :num_blue_ml, num_dark_ml = :num_dark_ml, gold = :gold;"""),
