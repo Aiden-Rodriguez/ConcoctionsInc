@@ -133,7 +133,7 @@ def get_bottle_plan():
     """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT num_green_ml, num_red_ml, num_blue_ml, num_dark_ml, 
-                                                    potion_capacity, 
+                                                    potion_capacity
                                                     FROM global_inventory"""))
 
         row = result.mappings().one()  # Using mappings to access the columns by name
