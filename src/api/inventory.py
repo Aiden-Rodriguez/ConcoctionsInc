@@ -26,16 +26,16 @@ def get_inventory():
         # Extract values from the row
         
         num_green_ml = row['num_green_ml']
-        num_green_potions = row['num_green_potions']
         num_blue_ml = row['num_blue_ml']
-        num_blue_potions = row['num_blue_potions']
         num_red_ml = row['num_red_ml']
-        num_red_potions = row['num_red_potions']
         num_dark_ml = row['num_dark_ml']
-        num_dark_potions = row['num_dark_potions']
-        num_potions = num_green_potions + num_blue_potions + num_dark_potions + num_red_potions
         num_ml = num_red_ml + num_blue_ml + num_green_ml + num_dark_ml
         gold = row['gold']
+
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(inventory)
+                                                    FROM potion_info_table"""))
+        num_potions = result.scalar()
+        
         return {"number_of_potions": num_potions, "ml_in_barrels": num_ml, "gold": gold}
 
 # Gets called once a day

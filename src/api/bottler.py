@@ -27,10 +27,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         if row == True:
             return "OK"
         else: # if no exist then go ahead and change the db!
-            result = connection.execute(sqlalchemy.text("""SELECT num_green_ml, num_green_potions, 
-                                                        num_red_ml, num_red_potions, 
-                                                        num_blue_ml, num_blue_potions, 
-                                                        num_dark_ml, num_dark_potions, 
+            result = connection.execute(sqlalchemy.text("""SELECT num_green_ml,
+                                                        num_red_ml,
+                                                        num_blue_ml,
+                                                        num_dark_ml,
                                                         potion_capacity 
                                                         FROM global_inventory"""))
             row = result.mappings().one()  # Using mappings to access the columns by name
@@ -38,21 +38,42 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             # Extract values from the row
         
             num_green_ml = row['num_green_ml']
-            num_green_potions = row['num_green_potions']
             num_red_ml = row['num_red_ml']
-            num_red_potions = row['num_red_potions']
             num_blue_ml = row['num_blue_ml']
-            num_blue_potions = row['num_blue_potions']
             num_dark_ml = row['num_dark_ml']
-            num_dark_potions = row['num_dark_potions']
             potion_capacity = row['potion_capacity']
+
+            result = connection.execute(sqlalchemy.text("""
+                SELECT potion_sku, SUM(inventory) AS inventory_count
+                FROM potion_info_table
+                WHERE potion_sku IN ('red', 'green', 'blue', 'dark')
+                GROUP BY potion_sku"""))
+            rows = result.fetchall()
+
+            num_green_potions = 0
+            num_blue_potions = 0
+            num_red_potions = 0
+            num_dark_potions = 0
+
+            for row in rows:
+                potion_sku = row[0]
+                inventory_count = row[1]
+    
+                if potion_sku == 'green':
+                    num_green_potions = inventory_count
+                elif potion_sku == 'blue':
+                    num_blue_potions = inventory_count
+                elif potion_sku == 'red':
+                    num_red_potions = inventory_count
+                elif potion_sku == 'dark':
+                    num_dark_potions = inventory_count
 
             quan_g = num_green_potions
             quan_r = num_red_potions
             quan_b = num_blue_potions
             quan_d = num_dark_potions
 
-            potions_total = num_blue_potions + num_green_potions + num_dark_potions + num_red_potions
+            total_potion_amount = num_blue_potions + num_dark_potions + num_green_potions + num_red_potions
 
             pot_r = 0
             pot_b = 0
@@ -77,11 +98,24 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                     num_dark_ml = num_dark_ml - 100*potion.quantity
                     pot_d = potion.quantity
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                               SET num_green_ml = :num_green_ml, num_green_potions = :quan_g, 
-                                               num_red_ml = :num_red_ml, num_red_potions = :quan_r, 
-                                               num_blue_ml = :num_blue_ml, num_blue_potions = :quan_b, 
-                                               num_dark_ml = :num_dark_ml, num_dark_potions = :quan_d;"""),
-                                    {"num_green_ml": num_green_ml, "quan_g": quan_g, "num_red_ml": num_red_ml, "quan_r": quan_r, "num_blue_ml": num_blue_ml, "quan_b": quan_b, "num_dark_ml": num_dark_ml, "quan_d": quan_d})
+                                               SET num_green_ml = :num_green_ml,
+                                               num_red_ml = :num_red_ml,
+                                               num_blue_ml = :num_blue_ml,
+                                               num_dark_ml = :num_dark_ml,"""),
+                                    {"num_green_ml": num_green_ml, "num_red_ml": num_red_ml, "num_blue_ml": num_blue_ml, "num_dark_ml": num_dark_ml})
+            
+            #kinda monkey mode but it works for now
+            connection.execute(sqlalchemy.text("""
+                UPDATE potion_info_table 
+                    SET inventory = inventory + CASE 
+                    WHEN potion_sku = 'red' THEN :num_red_potions_bought 
+                    WHEN potion_sku = 'green' THEN :num_green_potions_bought 
+                    WHEN potion_sku = 'blue' THEN :num_blue_potions_bought 
+                    WHEN potion_sku = 'dark' THEN :num_dark_potions_bought 
+                    ELSE 0 
+                END
+                WHERE potion_sku IN ('red', 'green', 'blue', 'dark')"""), 
+                {"num_red_potions_bought": quan_r, "num_green_potions_bought": quan_g, "num_blue_potions_bought": quan_b, "num_dark_potions_bought": quan_d})
             
             connection.execute(sqlalchemy.text("""INSERT INTO potion_order_table 
                                                (potion_order_id, num_red_potions, num_green_potions, num_blue_potions, num_dark_potions) 
@@ -118,16 +152,14 @@ def get_bottle_plan():
 
         # Extract values from the row
         num_green_ml = row['num_green_ml']
-        num_green_potions = row['num_green_potions']
         num_red_ml = row['num_red_ml']
-        num_red_potions = row['num_red_potions']
         num_blue_ml = row['num_blue_ml']
-        num_blue_potions = row['num_blue_potions']
         num_dark_ml = row['num_dark_ml']
-        num_dark_potions = row['num_dark_potions']
         potion_capacity = row['potion_capacity']
 
-        total_potion_amount = num_blue_potions + num_dark_potions + num_green_potions + num_red_potions
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(inventory)
+                                                    FROM potion_info_table"""))
+        total_potion_amount = result.scalar()
     
         #implement support for many pots later
         potion_list = []

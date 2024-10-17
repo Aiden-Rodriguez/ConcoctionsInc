@@ -179,23 +179,22 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             total_potions_bought_d += 1
 
         if transaction_occured == False:
-            result = connection.execute(sqlalchemy.text("""SELECT gold, num_green_potions, num_red_potions, num_blue_potions, num_dark_potions 
-                                                        FROM global_inventory"""))
-
-            row = result.mappings().one()  # Using mappings to access the columns by name
-            gold = row['gold']
-            # Extract values from the row
-
-            buying_list = []
-
-            gold += total_gold_paid
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                               SET num_green_potions = num_green_potions - :num_green_potions_bought,  
-                                               num_red_potions = num_red_potions - :num_red_potions_bought,
-                                               num_blue_potions = num_blue_potions - :num_blue_potions_bought,
-                                               num_dark_potions = num_dark_potions - :num_dark_potions_bought, 
-                                               gold = gold + :gold_change;"""),
-            {"num_green_potions_bought": total_potions_bought_g, "num_red_potions_bought": total_potions_bought_r, "num_blue_potions_bought": total_potions_bought_b, "num_dark_potions_bought": total_potions_bought_d, "gold_change": total_gold_paid})
+                                               SET gold = gold + :gold_change"""),
+            {"gold_change": total_gold_paid})
+
+            #kinda monkey mode but it works for now
+            connection.execute(sqlalchemy.text("""
+                UPDATE potion_info_table 
+                    SET inventory = inventory - CASE 
+                    WHEN potion_sku = 'red' THEN :num_red_potions_bought 
+                    WHEN potion_sku = 'green' THEN :num_green_potions_bought 
+                    WHEN potion_sku = 'blue' THEN :num_blue_potions_bought 
+                    WHEN potion_sku = 'dark' THEN :num_dark_potions_bought 
+                    ELSE 0 
+                END
+                WHERE potion_sku IN ('red', 'green', 'blue', 'dark')"""), 
+                {"num_red_potions_bought": total_potions_bought_r, "num_green_potions_bought": total_potions_bought_g, "num_blue_potions_bought": total_potions_bought_b, "num_dark_potions_bought": total_potions_bought_d})
 
             print(cart_checkout)
 
