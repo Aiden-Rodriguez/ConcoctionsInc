@@ -150,31 +150,53 @@ def get_bottle_plan():
         total_potion_amount = result.scalar()
     
         #implement support for many pots later
+
+        result = connection.execute(sqlalchemy.text("""SELECT potion_distribution
+                                                    FROM potion_info_table"""))
+        
+        distributions = result.mappings().all()
+
+        # result = connection.execute(sqlalchemy.text("""SELECT day
+        #                                                 FROM DATE
+        #                                                 ORDER BY id DESC
+        #                                                 LIMIT 1"""))
+        # #whatever the day is
+        # day = result.scalar()
+
         potion_list = []
-        green = [0,100,0,0]
-        red = [100,0,0,0]
-        blue = [0,0,100,0]
-        dark = [0,0,0,100]
+    
+        for potion_type in distributions:
+            distribution_values = potion_type['potion_distribution']
+            if 100 not in distribution_values: # mixed potion
+                red_cost = distribution_values[0]
+                green_cost = distribution_values[1]
+                blue_cost = distribution_values[2]
+                dark_cost = distribution_values[3]
+                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity:
+                    num_red_ml -= red_cost
+                    num_green_ml -= green_cost 
+                    num_blue_ml -= blue_cost
+                    num_dark_ml -= dark_cost
+                    total_potion_amount += 1
+                    add_or_increment_item(potion_list, {'potion_type': [red_cost, green_cost, blue_cost, dark_cost], 'quantity': 1})
+            else: # full potion; just make 3 of them its like whatever you know
+                count = 0
+                red_cost = distribution_values[0]
+                green_cost = distribution_values[1]
+                blue_cost = distribution_values[2]
+                dark_cost = distribution_values[3]
+                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 3:
+                    count += 1
+                    num_red_ml -= red_cost
+                    num_green_ml -= green_cost 
+                    num_blue_ml -= blue_cost
+                    num_dark_ml -= dark_cost
+                    add_or_increment_item(potion_list, {'potion_type': [red_cost, green_cost, blue_cost, dark_cost], 'quantity': 1})
+    
+    return potion_list
 
-        #convert all into green pots
-        while num_green_ml >= 100 and total_potion_amount < potion_capacity:
-            num_green_ml -= 100
-            total_potion_amount += 1
-            add_or_increment_item(potion_list, {'potion_type': green, 'quantity': 1})
-        while num_red_ml >= 100 and total_potion_amount < potion_capacity:
-            num_red_ml -= 100
-            total_potion_amount += 1
-            add_or_increment_item(potion_list, {'potion_type': red, 'quantity': 1})
-        while num_blue_ml >= 100 and total_potion_amount < potion_capacity:
-            num_blue_ml -= 100
-            total_potion_amount += 1
-            add_or_increment_item(potion_list, {'potion_type': blue, 'quantity': 1})
-        while num_dark_ml >= 100 and total_potion_amount < potion_capacity:
-            num_dark_ml -= 100
-            total_potion_amount += 1
-            add_or_increment_item(potion_list, {'potion_type': dark, 'quantity': 1})
 
-        return potion_list
+
 
 if __name__ == "__main__":
     print(get_bottle_plan())
