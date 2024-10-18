@@ -159,80 +159,55 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         {"order_id": cart_id})
 
 
-        rows = result.fetchall()
-        
-        pots = []
-        #where 0 is the potion id, 1 is the quantity
+        rows = result.mappings().all()
+
+        potion_list = []
+        #gather all potions
         for row in rows:
-            pots.append([row[0], row[1]])
+            potion_id = row['potion_id']
+            quantity = row['quantity']
+            potion_list.append([potion_id, quantity])
 
-        potion_ids = [pot[0] for pot in pots]
+        potion_ids = [potion[0] for potion in potion_list]
+        result = connection.execute(sqlalchemy.text("""SELECT id, inventory, price
+                                                    FROM potion_info_table
+                                                    WHERE id IN :potion_ids"""),
+                                                    {"potion_ids": tuple(potion_ids)})
 
-        result = connection.execute(sqlalchemy.text("""SELECT id, potion_sku
-            FROM potion_info_table
-            WHERE id IN :potion_ids"""), 
-            {"potion_ids": tuple(potion_ids)})
+        rows = result.mappings().all()
 
-        rows = result.fetchall()
+        # Create a lookup dictionary for potion details
+        potion_info_dict = {row['id']: (row['inventory'], row['price']) for row in rows}
 
-        sku_quantity_mapping = {
-            row[1]: pots[potion_ids.index(row[0])][1]
-            for row in rows
-        }
-
-        #do it the stupid way for now
-        num_green_potions = sku_quantity_mapping.get("green", 0)
-        num_blue_potions = sku_quantity_mapping.get("blue", 0)
-        num_red_potions = sku_quantity_mapping.get("red", 0)
-        num_dark_potions = sku_quantity_mapping.get("dark", 0)
-
-        total_potions_bought = 0
-        total_potions_bought_r = 0
-        total_potions_bought_g = 0
-        total_potions_bought_b = 0
-        total_potions_bought_d = 0
         total_gold_paid = 0
-            
-        while num_red_potions >= 1:
-            num_red_potions -= 1
-            total_potions_bought += 1
-            total_gold_paid += 50
-            total_potions_bought_r += 1
-        while num_green_potions >= 1:
-            num_green_potions -= 1
-            total_potions_bought += 1
-            total_gold_paid += 50
-            total_potions_bought_g += 1
-        while num_blue_potions >= 1:
-            num_blue_potions -= 1
-            total_potions_bought += 1
-            total_gold_paid += 50
-            total_potions_bought_b += 1
-        while num_dark_potions >= 1:
-            num_dark_potions -= 1
-            total_potions_bought += 1
-            total_gold_paid += 50
-            total_potions_bought_d += 1
+        total_potions_bought = 0
+        # Update potion_list with inventory and price
+        for potion in potion_list:
+            potion_id = potion[0]
+            inventory, price = potion_info_dict.get(potion_id, (None, None))
+            potion.append(inventory)
+            potion.append(price)
+            #change in potion numbers
+            #money gained from sellign that specfic potion
+            potion.append(potion[1]*price)
+            total_gold_paid += potion[1]*price 
+            total_potions_bought += potion[1]
+    
+
+            #print(f"Potion ID: {potion[0]}, Quantity: {potion[1]}, Inventory: {potion[2]}, Price: {potion[3]}, Gain in money: {potion[4]}")
 
         if transaction_occured == False:
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
                                                SET gold = gold + :gold_change"""),
             {"gold_change": total_gold_paid})
 
-            #kinda monkey mode but it works for now
-            connection.execute(sqlalchemy.text("""
-                UPDATE potion_info_table 
-                    SET inventory = inventory - CASE 
-                    WHEN potion_sku = 'red' THEN :num_red_potions_bought 
-                    WHEN potion_sku = 'green' THEN :num_green_potions_bought 
-                    WHEN potion_sku = 'blue' THEN :num_blue_potions_bought 
-                    WHEN potion_sku = 'dark' THEN :num_dark_potions_bought 
-                    ELSE 0 
-                END
-                WHERE potion_sku IN ('red', 'green', 'blue', 'dark')"""), 
-                {"num_red_potions_bought": total_potions_bought_r, "num_green_potions_bought": total_potions_bought_g, "num_blue_potions_bought": total_potions_bought_b, "num_dark_potions_bought": total_potions_bought_d})
 
-            print(cart_checkout)
+            for potion in potion_list:
+                connection.execute(sqlalchemy.text("""UPDATE potion_info_table
+                                                    SET inventory = inventory - :potion_num
+                                                    WHERE id = :potion_id"""),
+                                                    {"potion_num": potion[1], "potion_id": potion[0]})
+
 
             connection.execute(sqlalchemy.text("""UPDATE cart_order_table 
                                                SET transaction_occurred = :transaction_occurred
