@@ -46,17 +46,23 @@ def get_catalog():
         print(potion_in_inventory)
 
         catalogue_list = []
-
+        potions_to_remove = []
+        
         for potion_type in potion_in_inventory:
             if day == "Edgeday":
                 if potion_type['potion_type'][0] == 0:
                     catalogue_list.append(potion_type)
+                    potions_to_remove.append(potion_type)
             elif day == "Arcanaday":
                 if potion_type['potion_type'][2] == 0:
                     catalogue_list.append(potion_type)
+                    potions_to_remove.append(potion_type)
             elif day == "Bloomday":
                 if potion_type['potion_type'][1] == 0:
                     catalogue_list.append(potion_type)
+                    potions_to_remove.append(potion_type)
+
+            potion_in_inventory = [p for p in potion_in_inventory if p not in potions_to_remove]
 
             #just start adding potions if no special day or if slots remain!
             while len(catalogue_list) < 6 and len(potion_in_inventory) > 0:
