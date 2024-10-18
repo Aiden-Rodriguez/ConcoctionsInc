@@ -33,9 +33,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                                                         num_dark_ml,
                                                         potion_capacity 
                                                         FROM global_inventory"""))
-            row = result.mappings().one()  # Using mappings to access the columns by name
-
-            # Extract values from the row
+            row = result.mappings().one()
         
             num_green_ml = row['num_green_ml']
             num_red_ml = row['num_red_ml']
@@ -43,48 +41,35 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             num_dark_ml = row['num_dark_ml']
             potion_capacity = row['potion_capacity']
 
-            pot_r = 0
-            pot_b = 0
-            pot_g = 0
-            pot_d = 0
-
             potions_to_insert = []
-            for potion in potions_delivered :
-                if potion.potion_type == [0, 100, 0, 0]:
-                    num_green_ml = num_green_ml - 100*potion.quantity
-                    pot_r = potion.quantity
-                    potions_to_insert.append(([100,0,0,0], potion.quantity)) 
-                elif potion.potion_type == [100, 0, 0, 0] :
-                    num_red_ml = num_red_ml - 100*potion.quantity
-                    pot_g = potion.quantity
-                    potions_to_insert.append(([0,100,0,0], potion.quantity)) 
-                elif potion.potion_type == [0, 0, 100, 0] :
-                    num_blue_ml = num_blue_ml - 100*potion.quantity
-                    pot_b = potion.quantity
-                    potions_to_insert.append(([0,0,100,0], potion.quantity)) 
-                elif potion.potion_type == [0, 0, 0, 100] :
-                    num_dark_ml = num_dark_ml - 100*potion.quantity
-                    pot_d = potion.quantity
-                    potions_to_insert.append(([0,0,0,100], potion.quantity)) 
+
+            for potion in potions_delivered:
+                potion_type = potion.potion_type
+                potion_quantity = potion.quantity
+                red_cost = potion_type[0]*potion_quantity
+                green_cost = potion_type[1]*potion_quantity
+                blue_cost = potion_type[2]*potion_quantity
+                dark_cost = potion_type[3]*potion_quantity
+                potions_to_insert.append([potion_type, potion_quantity])
+
+            print(potions_to_insert)
+
+
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                               SET num_green_ml = :num_green_ml,
-                                               num_red_ml = :num_red_ml,
-                                               num_blue_ml = :num_blue_ml,
-                                               num_dark_ml = :num_dark_ml"""),
-                                    {"num_green_ml": num_green_ml, "num_red_ml": num_red_ml, "num_blue_ml": num_blue_ml, "num_dark_ml": num_dark_ml})
+                                               SET num_green_ml = num_green_ml - :green_cost,
+                                               num_red_ml = num_red_ml - :red_cost,
+                                               num_blue_ml = num_blue_ml - :blue_cost,
+                                               num_dark_ml = num_dark_ml - :dark_cost"""),
+                                    {"green_cost": green_cost, "red_cost": red_cost, "blue_cost": blue_cost, "dark_cost": dark_cost})
             
-            #kinda monkey mode but it works for now
-            connection.execute(sqlalchemy.text("""
-                UPDATE potion_info_table 
-                    SET inventory = inventory + CASE 
-                    WHEN potion_sku = 'red' THEN :num_red_potions_bought 
-                    WHEN potion_sku = 'green' THEN :num_green_potions_bought 
-                    WHEN potion_sku = 'blue' THEN :num_blue_potions_bought 
-                    WHEN potion_sku = 'dark' THEN :num_dark_potions_bought 
-                    ELSE 0 
-                END
-                WHERE potion_sku IN ('red', 'green', 'blue', 'dark')"""), 
-                {"num_red_potions_bought": pot_r, "num_green_potions_bought": pot_g, "num_blue_potions_bought": pot_b, "num_dark_potions_bought": pot_d})
+
+            for potion in potions_to_insert:
+                connection.execute(sqlalchemy.text("""UPDATE potion_info_table
+                                                   SET inventory = inventory + :potions_to_add
+                                                   WHERE potion_distribution = :potion_distribution
+                                                   """),
+                                                   {"potions_to_add": potion[1], "potion_distribution": potion[0]})
+            
             
             connection.execute(sqlalchemy.text("""INSERT INTO potion_order_table 
                                                (potion_order_id)
@@ -98,19 +83,13 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                                                         LIMIT 1"""))
             time_id = result.scalar()
 
-            if potions_to_insert:
-                insert_values = ", ".join(
-                    [f"(:potion_order_id, :time_id, '{potion_type}', {quantity})" for potion_type, quantity in potions_to_insert]
-                )
-
-                connection.execute(sqlalchemy.text(f"""INSERT INTO potions 
-                                                   (potion_order_id, time_id, potion_type, quantity) 
-                                                   VALUES {insert_values}"""),
-                                   {"potion_order_id": order_id, "time_id": time_id})
+            for potion in potions_to_insert:
+                connection.execute(sqlalchemy.text("""INSERT INTO potions
+                                                   (potion_order_id, time_id, potion_type, quantity)
+                                                   VALUES (:potion_order_id, :time_id, :potion_type, :quantity)
+                                                   """),
+                                                   {"potion_order_id": order_id, "time_id": time_id, "potion_type": potion[0], "quantity": potion[1]})
             
-            #, num_red_potions, num_green_potions, num_blue_potions, num_dark_potions) 
-            #, :num_red_potions, :num_green_potions, :num_blue_potions, :num_dark_potions
-            # "num_red_potions": pot_r, "num_green_potions": pot_g, "num_blue_potions": pot_b, "num_dark_potions": pot_d
             print(f"potions delievered: {potions_delivered} order_id: {order_id}")
             return "OK"
 
