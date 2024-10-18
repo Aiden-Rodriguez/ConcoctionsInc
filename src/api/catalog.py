@@ -26,60 +26,41 @@ def get_catalog():
             inventory_count = row['inventory_count']
             price = row['price']
             potion_distribution = row['potion_distribution']
-            print(f"Potion SKU: {potion_sku}, Potion Name: {potion_name}, Inventory: {inventory_count}, Price: {price}, Distribution: {potion_distribution}")
+            potion_in_inventory.append(
+                {
+                    "sku": potion_sku,
+                    "name": potion_name,
+                    "quantity": inventory_count,
+                    "price": price,
+                    "potion_type": potion_distribution
+                }
+            )
 
+        result = connection.execute(sqlalchemy.text("""SELECT day
+                                                        FROM DATE
+                                                        ORDER BY id DESC
+                                                        LIMIT 1"""))
+        #whatever the day is
+        day = result.scalar()
 
-        num_green_potions = 0
-        num_blue_potions = 0
-        num_red_potions = 0
-        num_dark_potions = 0
-
-    
-        if potion_sku == 'green':
-            num_green_potions = inventory_count
-        elif potion_sku == 'blue':
-            num_blue_potions = inventory_count
-        elif potion_sku == 'red':
-            num_red_potions = inventory_count
-        elif potion_sku == 'dark':
-            num_dark_potions = inventory_count
+        print(potion_in_inventory)
 
         catalogue_list = []
 
-        if num_green_potions > 0:
-            catalogue_list.append(
-                {
-                    "sku": "num_green_potions",
-                    "name": "green potion",
-                    "quantity": num_green_potions,
-                    "price": 50,
-                    "potion_type": [0, 100, 0, 0],
-                })
-        if num_red_potions > 0:
-            catalogue_list.append(
-                {
-                    "sku": "num_red_potions",
-                    "name": "red potion",
-                    "quantity": num_red_potions,
-                    "price": 50,
-                    "potion_type": [100, 0, 0, 0],
-                })
-        if num_blue_potions > 0:
-            catalogue_list.append(
-                {
-                    "sku": "num_blue_potions",
-                    "name": "blue potion",
-                    "quantity": num_blue_potions,
-                    "price": 50,
-                    "potion_type": [0, 0, 100, 0],
-                })
-        if num_dark_potions > 0:
-            catalogue_list.append(
-                {
-                    "sku": "num_dark_potions",
-                    "name": "dark potion",
-                    "quantity": num_dark_potions,
-                    "price": 50,
-                    "potion_type": [0, 0, 0, 100],
-                })
+        for potion_type in potion_in_inventory:
+            if day == "Edgeday":
+                if potion_type['potion_type'][0] == 0:
+                    catalogue_list.append(potion_type)
+            elif day == "Arcanaday":
+                if potion_type['potion_type'][2] == 0:
+                    catalogue_list.append(potion_type)
+            elif day == "Bloomday":
+                if potion_type['potion_type'][1] == 0:
+                    catalogue_list.append(potion_type)
+
+            #just start adding potions if no special day or if slots remain!
+            while len(catalogue_list) < 6 and len(potion_in_inventory) > 0:
+                potion_type = potion_in_inventory.pop(0)
+                catalogue_list.append(potion_type)
+
         return catalogue_list
