@@ -21,7 +21,7 @@ CREATE TABLE cart_order_table (
     time_id BIGINT,
     transaction_occurred BOOLEAN,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (time_id) REFERENCES date3(id) ON DELETE SET NULL
+    FOREIGN KEY (time_id) REFERENCES date(id) ON DELETE SET NULL
 );
 
 -- Schema for global_inventory
@@ -38,7 +38,7 @@ CREATE TABLE global_inventory (
 );
 
 -- Insert default row
-INSERT INTO global_inventory3 (id, num_blue_ml, num_green_ml, num_red_ml, num_dark_ml, gold, potion_capacity, ml_capacity, created_at)
+INSERT INTO global_inventory (id, num_blue_ml, num_green_ml, num_red_ml, num_dark_ml, gold, potion_capacity, ml_capacity, created_at)
 VALUES (1, 0, 0, 0, 0, 100, 50, 10000, NOW());
 
 -- Schema for potion_info_table
@@ -50,8 +50,8 @@ CREATE TABLE potion_info_table (
     potion_distribution INTEGER[] NOT NULL
 );
 
--- Insert data into potion_info_table3
-INSERT INTO potion_info_table3 (potion_sku, potion_distribution)
+-- Insert data into potion_info_table
+INSERT INTO potion_info_table (potion_sku, potion_distribution)
 VALUES 
     ('red', ARRAY[100, 0, 0, 0]),
     ('green', ARRAY[0, 100, 0, 0]),
@@ -65,8 +65,8 @@ CREATE TABLE carts (
     id BIGINT PRIMARY KEY,
     cart_id BIGINT,
     potion_id BIGINT,
-    FOREIGN KEY (cart_id) REFERENCES cart_order_table3(id) ON DELETE SET NULL,
-    FOREIGN KEY (potion_id) REFERENCES potion_info_table3(id) ON DELETE SET NULL,
+    FOREIGN KEY (cart_id) REFERENCES cart_order_table(id) ON DELETE SET NULL,
+    FOREIGN KEY (potion_id) REFERENCES potion_info_table(id) ON DELETE SET NULL,
     quantity BIGINT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
@@ -79,8 +79,8 @@ CREATE TABLE potions (
     potion_order_id INTEGER NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     time_id BIGINT,
-    FOREIGN KEY (time_id) REFERENCES date3(id) ON DELETE SET NULL,
-    FOREIGN KEY (potion_order_id) REFERENCES potion_order_table3(potion_order_id) ON DELETE SET NULL  -- Corrected reference
+    FOREIGN KEY (time_id) REFERENCES date(id) ON DELETE SET NULL,
+    FOREIGN KEY (potion_order_id) REFERENCES potion_order_table(potion_order_id) ON DELETE SET NULL  -- Corrected reference
 );
 
 -- Schema for barrel_order_table
@@ -98,6 +98,6 @@ CREATE TABLE barrels (
     quantity_ml BIGINT NOT NULL,
     time_id BIGINT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (time_id) REFERENCES date3(id) ON DELETE SET NULL,
-    FOREIGN KEY (barrel_order_id) REFERENCES barrel_order_table3(barrel_order_id) ON DELETE SET NULL
+    FOREIGN KEY (time_id) REFERENCES date(id) ON DELETE SET NULL,
+    FOREIGN KEY (barrel_order_id) REFERENCES barrel_order_table(barrel_order_id) ON DELETE SET NULL
 );
