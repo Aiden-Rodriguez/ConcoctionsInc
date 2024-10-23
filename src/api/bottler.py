@@ -43,13 +43,18 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
             potions_to_insert = []
 
+            red_cost = 0
+            green_cost = 0
+            blue_cost = 0
+            dark_cost = 0
+
             for potion in potions_delivered:
                 potion_type = potion.potion_type
                 potion_quantity = potion.quantity
-                red_cost = potion_type[0]*potion_quantity
-                green_cost = potion_type[1]*potion_quantity
-                blue_cost = potion_type[2]*potion_quantity
-                dark_cost = potion_type[3]*potion_quantity
+                red_cost += potion_type[0]*potion_quantity
+                green_cost += potion_type[1]*potion_quantity
+                blue_cost += potion_type[2]*potion_quantity
+                dark_cost += potion_type[3]*potion_quantity
                 potions_to_insert.append([potion_type, potion_quantity])
 
             print(potions_to_insert)
