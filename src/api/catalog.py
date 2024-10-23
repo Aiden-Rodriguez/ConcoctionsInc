@@ -14,8 +14,9 @@ def get_catalog():
         result = connection.execute(sqlalchemy.text("""
             SELECT potion_sku, SUM(inventory) AS inventory_count, price, potion_distribution
             FROM potion_info_table
-            WHERE inventory > 1
-            GROUP BY potion_sku, price, potion_distribution"""))
+            WHERE inventory >= 1 
+            GROUP BY potion_sku, price, potion_distribution, priority
+            ORDER BY priority desc"""))
         rows = result.mappings().all()
 
         # append stuff to see whats in inventory

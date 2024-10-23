@@ -150,6 +150,7 @@ def get_bottle_plan():
 
         potion_list = []
 
+        # make # of potions ; vary on capacity
         for potion_type in distributions:
             distribution_values = potion_type['potion_distribution']
             if 111 in distribution_values: #potion we will not make; decomitioned as it is not useful for selling or deemed as bad
@@ -160,8 +161,7 @@ def get_bottle_plan():
                 blue_cost = distribution_values[2]
                 dark_cost = distribution_values[3]
                 count = 0
-                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 15:
-                    print("augh")
+                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 10*(potion_capacity/50):
                     count += 1
                     num_red_ml -= red_cost
                     num_green_ml -= green_cost 
@@ -175,8 +175,7 @@ def get_bottle_plan():
                 green_cost = distribution_values[1]
                 blue_cost = distribution_values[2]
                 dark_cost = distribution_values[3]
-                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 3:
-                    print("augh2")
+                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 3*(potion_capacity/50):
                     count += 1
                     total_potion_amount += 1
                     num_red_ml -= red_cost
