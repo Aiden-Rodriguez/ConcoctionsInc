@@ -168,7 +168,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 #dont buy mini barrels frick mini barrels
                 #red
                 if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and day != "Edgeday":
-                    while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_red_ml < 1000:
+                    while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_red_ml < 2000:
                         sku = barrel.sku
                         barrel.quantity -= 1
                         gold -= barrel.price
@@ -178,7 +178,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         purchased_any = True
                 #green
                 elif barrel.potion_type == [0,1,0,0] and "MINI" not in barrel.sku and day != "Bloomday":
-                    while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_green_ml < 1000:
+                    while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_green_ml < 2000:
                         sku = barrel.sku
                         barrel.quantity -= 1
                         gold -= barrel.price
@@ -188,7 +188,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         purchased_any = True
                 #blue
                 elif barrel.potion_type == [0,0,1,0] and "MINI" not in barrel.sku and day != "Arcanaday":
-                    while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_blue_ml < 1000:
+                    while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_blue_ml < 2000:
                         sku = barrel.sku
                         barrel.quantity -= 1
                         gold -= barrel.price
@@ -198,7 +198,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         purchased_any = True
                 #dark
                 elif barrel.potion_type == [0,0,0,1] and "MINI" not in barrel.sku:
-                    while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_dark_ml < 1000:
+                    while barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price and num_dark_ml < 2000:
                         sku = barrel.sku
                         barrel.quantity -= 1
                         gold -= barrel.price
