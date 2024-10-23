@@ -120,9 +120,8 @@ def get_bottle_plan():
                                                     potion_capacity
                                                     FROM global_inventory"""))
 
-        row = result.mappings().one()  # Using mappings to access the columns by name
+        row = result.mappings().one() 
 
-        # Extract values from the row
         num_green_ml = row['num_green_ml']
         num_red_ml = row['num_red_ml']
         num_blue_ml = row['num_blue_ml']
@@ -134,8 +133,11 @@ def get_bottle_plan():
         total_potion_amount = result.scalar()
 
         result = connection.execute(sqlalchemy.text("""SELECT potion_distribution
-                                                    FROM potion_info_table"""))
-        
+                                                    FROM potion_info_table
+                                                    ORDER BY  priority desc"""))
+        #potions will come based on highest priority
+        #0 priority on a potion means we wont make it
+
         #list of all potions in db that are avail
         distributions = result.mappings().all()
 
@@ -150,7 +152,9 @@ def get_bottle_plan():
 
         for potion_type in distributions:
             distribution_values = potion_type['potion_distribution']
-            if 100 not in distribution_values: # mixed potion
+            if 111 in distribution_values: #potion we will not make; decomitioned as it is not useful for selling or deemed as bad
+                pass
+            elif 100 not in distribution_values: # mixed potion
                 red_cost = distribution_values[0]
                 green_cost = distribution_values[1]
                 blue_cost = distribution_values[2]
