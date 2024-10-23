@@ -45,8 +45,8 @@ def get_capacity_plan():
     capacity unit costs 1000 gold.
     """
 
-    #if potion amount is 70% of storage, buy upgrade
-    #if ml amount is 70% of storage, buy upgrade
+    #if potion amount is 50% of storage, buy upgrade
+    #if ml amount is 50% of storage, buy upgrade
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT SUM(inventory)
                                                     FROM potion_info_table"""))
@@ -71,10 +71,10 @@ def get_capacity_plan():
         quan_potion_capacity = 0
         quan_ml_capacity = 0
         #prioritize potion space a bit
-        if num_potions/potion_capacity >= 0.70 and gold >= 1000:
+        if num_potions/potion_capacity >= 0.50 and gold >= 1200:
             gold -= 1000
             quan_potion_capacity += 1
-        if num_ml_total/ml_capacity >= 0.70 and gold >= 1000:
+        if num_ml_total/ml_capacity >= 0.50 and gold >= 1200:
             gold -= 1000
             quan_ml_capacity += 1
 
