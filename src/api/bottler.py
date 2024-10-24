@@ -27,19 +27,19 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         if row == True:
             return "OK"
         else: # if no exist then go ahead and change the db!
-            result = connection.execute(sqlalchemy.text("""SELECT num_green_ml,
-                                                        num_red_ml,
-                                                        num_blue_ml,
-                                                        num_dark_ml,
-                                                        potion_capacity 
-                                                        FROM global_inventory"""))
-            row = result.mappings().one()
+            # result = connection.execute(sqlalchemy.text("""SELECT num_green_ml,
+            #                                             num_red_ml,
+            #                                             num_blue_ml,
+            #                                             num_dark_ml,
+            #                                             potion_capacity 
+            #                                             FROM global_inventory"""))
+            # row = result.mappings().one()
         
-            num_green_ml = row['num_green_ml']
-            num_red_ml = row['num_red_ml']
-            num_blue_ml = row['num_blue_ml']
-            num_dark_ml = row['num_dark_ml']
-            potion_capacity = row['potion_capacity']
+            # num_green_ml = row['num_green_ml']
+            # num_red_ml = row['num_red_ml']
+            # num_blue_ml = row['num_blue_ml']
+            # num_dark_ml = row['num_dark_ml']
+            # potion_capacity = row['potion_capacity']
 
             potions_to_insert = []
 
@@ -61,7 +61,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
 
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                               SET num_green_ml = num_green_ml - :green_cost,
+                                               SET 
+                                               num_green_ml = num_green_ml - :green_cost,
                                                num_red_ml = num_red_ml - :red_cost,
                                                num_blue_ml = num_blue_ml - :blue_cost,
                                                num_dark_ml = num_dark_ml - :dark_cost"""),
