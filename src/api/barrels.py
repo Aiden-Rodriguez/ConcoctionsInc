@@ -150,12 +150,20 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         # print(ml_compare_list)
 
+        efficiency_list = []
+
+        for barrel in wholesale_catalog:
+            efficiency_list.append(barrel)
+
+        efficiency_list.sort(key=lambda barrel: barrel.ml_per_barrel / barrel.price, reverse=True)
+
+        print(efficiency_list)
 
         while ml_total <= ml_capacity and gold > 0:
             purchased_any = False
 
             # for potion_type, percentage in ml_compare_list:
-            for barrel in wholesale_catalog:
+            for barrel in efficiency_list:
                 # if purchased_any:
                 #     break
 
