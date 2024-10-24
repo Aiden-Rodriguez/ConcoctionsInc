@@ -137,65 +137,65 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         day = result.scalar()
 
         buying_list = []
-        ml_sum = num_blue_ml + num_dark_ml + num_green_ml + num_red_ml
-        ml_compare_list = [("red", num_red_ml), ("green", num_green_ml), ("blue", num_blue_ml), ("dark", num_dark_ml)]
+        # ml_sum = num_blue_ml + num_dark_ml + num_green_ml + num_red_ml
+        # ml_compare_list = [("red", num_red_ml), ("green", num_green_ml), ("blue", num_blue_ml), ("dark", num_dark_ml)]
 
-        #calculate percentages
-        if ml_sum != 0:
-            ml_compare_list = [(name, ml / ml_sum) for name, ml in ml_compare_list]
-        else:
-            ml_compare_list = [(name, 0) for name, ml in ml_compare_list]
+        # #calculate percentages
+        # if ml_sum != 0:
+        #     ml_compare_list = [(name, ml / ml_sum) for name, ml in ml_compare_list]
+        # else:
+        #     ml_compare_list = [(name, 0) for name, ml in ml_compare_list]
 
-        ml_compare_list.sort(key=lambda x: x[1])
+        # ml_compare_list.sort(key=lambda x: x[1])
 
-        print(ml_compare_list)
+        # print(ml_compare_list)
 
 
         while ml_total <= ml_capacity and gold > 0:
             purchased_any = False
 
-            for potion_type, percentage in ml_compare_list:
-                for barrel in wholesale_catalog:
-                    if purchased_any:
-                        break
+            # for potion_type, percentage in ml_compare_list:
+            for barrel in wholesale_catalog:
+                # if purchased_any:
+                #     break
 
-                    #handle buying based on lowest ml percentage
-                    if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and day != "Edgeday" and potion_type == "red":
-                        if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
-                            sku = barrel.sku
-                            barrel.quantity -= 1
-                            gold -= barrel.price
-                            ml_total += barrel.ml_per_barrel
-                            num_red_ml += barrel.ml_per_barrel
-                            add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
-                            purchased_any = True
-                    elif barrel.potion_type == [0,1,0,0] and "MINI" not in barrel.sku and day != "Bloomday" and potion_type == "green":
-                        if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
-                            sku = barrel.sku
-                            barrel.quantity -= 1
-                            gold -= barrel.price
-                            ml_total += barrel.ml_per_barrel
-                            num_green_ml += barrel.ml_per_barrel
-                            add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
-                            purchased_any = True
-                    elif barrel.potion_type == [0,0,1,0] and "MINI" not in barrel.sku and day != "Arcanaday" and potion_type == "blue":
-                        if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
-                            sku = barrel.sku
-                            barrel.quantity -= 1
-                            gold -= barrel.price
-                            ml_total += barrel.ml_per_barrel
-                            num_blue_ml += barrel.ml_per_barrel
-                            add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
-                            purchased_any = True
-                    elif barrel.potion_type == [0,0,0,1] and "MINI" not in barrel.sku and potion_type == "dark":
-                        if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
-                            sku = barrel.sku
-                            barrel.quantity -= 1
-                            gold -= barrel.price
-                            ml_total += barrel.ml_per_barrel
-                            num_dark_ml += barrel.ml_per_barrel
-                            add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
-                            purchased_any = True
+                #handle buying based on lowest ml percentage
+                if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and day != "Edgeday" and num_red_ml < 2000*(ml_capacity/10000):
+                    if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
+                        sku = barrel.sku
+                        barrel.quantity -= 1
+                        gold -= barrel.price
+                        ml_total += barrel.ml_per_barrel
+                        num_red_ml += barrel.ml_per_barrel
+                        add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                        purchased_any = True
+                elif barrel.potion_type == [0,1,0,0] and "MINI" not in barrel.sku and day != "Bloomday" and num_green_ml < 2000*(ml_capacity/10000):
+                    if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
+                        sku = barrel.sku
+                        barrel.quantity -= 1
+                        gold -= barrel.price
+                        ml_total += barrel.ml_per_barrel
+                        num_green_ml += barrel.ml_per_barrel
+                        add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                        purchased_any = True
+                elif barrel.potion_type == [0,0,1,0] and "MINI" not in barrel.sku and day != "Arcanaday" and num_blue_ml < 2000*(ml_capacity/10000):
+                    if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
+                        sku = barrel.sku
+                        barrel.quantity -= 1
+                        gold -= barrel.price
+                        ml_total += barrel.ml_per_barrel
+                        num_blue_ml += barrel.ml_per_barrel
+                        add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                        purchased_any = True
+                elif barrel.potion_type == [0,0,0,1] and "MINI" not in barrel.sku and num_dark_ml < 2000*(ml_capacity/10000):
+                    if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
+                        sku = barrel.sku
+                        barrel.quantity -= 1
+                        gold -= barrel.price
+                        ml_total += barrel.ml_per_barrel
+                        num_dark_ml += barrel.ml_per_barrel
+                        add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
+                        purchased_any = True
 
             if not purchased_any:
                 break
