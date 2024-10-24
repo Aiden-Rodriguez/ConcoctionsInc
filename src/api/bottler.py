@@ -133,9 +133,10 @@ def get_bottle_plan():
                                                     FROM potion_info_table"""))
         total_potion_amount = result.scalar()
 
-        result = connection.execute(sqlalchemy.text("""SELECT potion_distribution
+        result = connection.execute(sqlalchemy.text("""SELECT potion_distribution,
+                                                    in_test
                                                     FROM potion_info_table
-                                                    ORDER BY  priority desc"""))
+                                                    ORDER BY priority desc"""))
         #potions will come based on highest priority
         #0 priority on a potion means we wont make it
 
@@ -154,6 +155,7 @@ def get_bottle_plan():
         # make # of potions ; vary on capacity
         for potion_type in distributions:
             distribution_values = potion_type['potion_distribution']
+            in_test_value = potion_type['in_test']
             if 111 in distribution_values: #potion we will not make; decomitioned as it is not useful for selling or deemed as bad
                 pass
             elif 100 not in distribution_values: # mixed potion
@@ -163,7 +165,11 @@ def get_bottle_plan():
                 dark_cost = distribution_values[3]
                 count = 0
                 while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 10*(potion_capacity/50):
-                    count += 1
+                    #make less potions that are in testing stage so I dont waste stuff
+                    if in_test_value == True:
+                        count += 4
+                    else:
+                        count += 1
                     num_red_ml -= red_cost
                     num_green_ml -= green_cost 
                     num_blue_ml -= blue_cost

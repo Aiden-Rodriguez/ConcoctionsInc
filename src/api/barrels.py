@@ -167,7 +167,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 # if purchased_any:
                 #     break
 
-                #handle buying based on lowest ml percentage
+                #handle buying based having limits based on current max capacity
                 if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and day != "Edgeday" and num_red_ml < 2000*(ml_capacity/10000):
                     if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
                         sku = barrel.sku
