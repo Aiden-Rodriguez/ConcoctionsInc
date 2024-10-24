@@ -22,6 +22,7 @@ def get_catalog():
         # append stuff to see whats in inventory
         potion_in_inventory = []
         for row in rows:
+            #invalid potion
             potion_sku = row['potion_sku']
             potion_name = row['potion_sku']
             inventory_count = row['inventory_count']
@@ -33,9 +34,11 @@ def get_catalog():
                     "name": potion_name,
                     "quantity": inventory_count,
                     "price": price,
-                    "potion_type": potion_distribution
+                    "potion_type": [potion_distribution[0], potion_distribution[1], potion_distribution[2], potion_distribution[3]]
                 }
             )
+
+
 
         result = connection.execute(sqlalchemy.text("""SELECT day
                                                         FROM DATE
