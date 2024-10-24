@@ -78,7 +78,6 @@ def get_capacity_plan():
             gold -= 1000
             quan_ml_capacity += 1
 
-
         return {
             "potion_capacity": quan_potion_capacity,
             "ml_capacity": quan_ml_capacity

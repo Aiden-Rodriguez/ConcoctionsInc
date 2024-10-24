@@ -23,21 +23,22 @@ def get_catalog():
         potion_in_inventory = []
         for row in rows:
             #invalid potion
-            if 111 not in row['potion_distribution']:
-                potion_sku = row['potion_sku']
-                potion_name = row['potion_sku']
-                inventory_count = row['inventory_count']
-                price = row['price']
-                potion_distribution = row['potion_distribution']
-                potion_in_inventory.append(
-                    {
-                        "sku": potion_sku,
-                        "name": potion_name,
-                        "quantity": inventory_count,
-                        "price": price,
-                        "potion_type": potion_distribution
-                    }
-                )
+            potion_sku = row['potion_sku']
+            potion_name = row['potion_sku']
+            inventory_count = row['inventory_count']
+            price = row['price']
+            potion_distribution = row['potion_distribution']
+            potion_in_inventory.append(
+                {
+                    "sku": potion_sku,
+                    "name": potion_name,
+                    "quantity": inventory_count,
+                    "price": price,
+                    "potion_type": [potion_distribution[0], potion_distribution[1], potion_distribution[2], potion_distribution[3]]
+                }
+            )
+
+
 
         result = connection.execute(sqlalchemy.text("""SELECT day
                                                         FROM DATE
