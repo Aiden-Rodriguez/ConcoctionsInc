@@ -71,10 +71,10 @@ def get_capacity_plan():
         quan_potion_capacity = 0
         quan_ml_capacity = 0
         #prioritize potion space a bit
-        if num_potions/potion_capacity >= 0.40 and gold >= 1200:
+        if num_potions/potion_capacity >= 0.40 and gold >= 1000 and num_potions > 20:
             gold -= 1000
             quan_potion_capacity += 1
-        if num_ml_total/ml_capacity >= 0.40 and gold >= 1200:
+        if num_ml_total/ml_capacity >= 0.40 and gold >= 1000 and num_potions > 20:
             gold -= 1000
             quan_ml_capacity += 1
 
