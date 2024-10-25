@@ -52,9 +52,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             gold = row['gold']
             gold_paying = 0
             barrels_to_insert = []
-
             for barrel in barrels_delivered :
-                gold -= barrel.price * barrel.quantity
                 gold_paying += barrel.price * barrel.quantity
                 if barrel.potion_type == [1,0,0,0]:
                     num_red_ml += barrel.ml_per_barrel * barrel.quantity
@@ -94,8 +92,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
     
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                               SET num_green_ml = :num_green_ml, num_red_ml = :num_red_ml, num_blue_ml = :num_blue_ml, num_dark_ml = :num_dark_ml, gold = :gold;"""),
-                                {"num_green_ml": num_green_ml, "num_red_ml": num_red_ml, "num_blue_ml": num_blue_ml,"num_dark_ml": num_dark_ml, "gold": gold})
+                                               SET num_green_ml = :num_green_ml, num_red_ml = :num_red_ml, num_blue_ml = :num_blue_ml, num_dark_ml = :num_dark_ml, gold = gold - :gold_paying;"""),
+                                {"num_green_ml": num_green_ml, "num_red_ml": num_red_ml, "num_blue_ml": num_blue_ml,"num_dark_ml": num_dark_ml, "gold_paying": gold_paying})
         
             print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
             return "OK"
