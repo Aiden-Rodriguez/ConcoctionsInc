@@ -53,13 +53,13 @@ def get_catalog():
         potions_to_remove = []
         
         for potion_type in potion_in_inventory:
-            if day == "Edgeday" and potion_type['potion_type'][0] != 100:
+            if day == "Edgeday" and potion_type['potion_type'][0] != 100 and len(catalogue_list) < 6:
                 catalogue_list.append(potion_type)
                 potions_to_remove.append(potion_type)
-            elif day == "Arcanaday" and potion_type['potion_type'][2] != 100:
+            elif day == "Arcanaday" and potion_type['potion_type'][2] != 100 and len(catalogue_list) < 6:
                 catalogue_list.append(potion_type)
                 potions_to_remove.append(potion_type)
-            elif day == "Bloomday" and potion_type['potion_type'][1] != 100:
+            elif day == "Bloomday" and potion_type['potion_type'][1] != 100 and len(catalogue_list) < 6:
                 catalogue_list.append(potion_type)
                 potions_to_remove.append(potion_type)
 
