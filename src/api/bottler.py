@@ -164,7 +164,7 @@ def get_bottle_plan():
                 blue_cost = distribution_values[2]
                 dark_cost = distribution_values[3]
                 count = 0
-                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 10*(potion_capacity/50):
+                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 7*(potion_capacity/50):
                     #make less potions that are in testing stage so I dont waste stuff
                     if in_test_value == True:
                         count += 4
