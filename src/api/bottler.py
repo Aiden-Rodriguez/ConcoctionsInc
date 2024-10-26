@@ -26,20 +26,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         row = result.scalar()
         if row == True:
             return "OK"
-        else: # if no exist then go ahead and change the db!
-            # result = connection.execute(sqlalchemy.text("""SELECT num_green_ml,
-            #                                             num_red_ml,
-            #                                             num_blue_ml,
-            #                                             num_dark_ml,
-            #                                             potion_capacity 
-            #                                             FROM global_inventory"""))
-            # row = result.mappings().one()
-        
-            # num_green_ml = row['num_green_ml']
-            # num_red_ml = row['num_red_ml']
-            # num_blue_ml = row['num_blue_ml']
-            # num_dark_ml = row['num_dark_ml']
-            # potion_capacity = row['potion_capacity']
+        else: 
 
             potions_to_insert = []
 
@@ -58,7 +45,6 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 potions_to_insert.append([potion_type, potion_quantity])
 
             print(potions_to_insert)
-
 
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
                                                SET 

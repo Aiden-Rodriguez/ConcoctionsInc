@@ -44,10 +44,15 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
             # Extract values from the row
         
-            num_green_ml = row['num_green_ml']
-            num_red_ml = row['num_red_ml']
-            num_blue_ml = row['num_blue_ml']
-            num_dark_ml = row['num_dark_ml']
+            # num_green_ml = row['num_green_ml']
+            # num_red_ml = row['num_red_ml']
+            # num_blue_ml = row['num_blue_ml']
+            # num_dark_ml = row['num_dark_ml']
+            red_change = 0
+            green_change = 0
+            blue_change = 0
+            dark_change = 0
+
         
             gold = row['gold']
             gold_paying = 0
@@ -55,16 +60,16 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             for barrel in barrels_delivered :
                 gold_paying += barrel.price * barrel.quantity
                 if barrel.potion_type == [1,0,0,0]:
-                    num_red_ml += barrel.ml_per_barrel * barrel.quantity
+                    red_change += barrel.ml_per_barrel * barrel.quantity
                     barrels_to_insert.append(([1,0,0,0], barrel.ml_per_barrel * barrel.quantity))  
                 if barrel.potion_type == [0,1,0,0]:
-                    num_green_ml += barrel.ml_per_barrel * barrel.quantity
+                    green_change += barrel.ml_per_barrel * barrel.quantity
                     barrels_to_insert.append(([0,1,0,0], barrel.ml_per_barrel * barrel.quantity)) 
                 if barrel.potion_type == [0,0,1,0]:
-                    num_blue_ml += barrel.ml_per_barrel * barrel.quantity
+                    blue_change += barrel.ml_per_barrel * barrel.quantity
                     barrels_to_insert.append(([0,0,1,0], barrel.ml_per_barrel * barrel.quantity)) 
                 if barrel.potion_type == [0,0,0,1]:
-                    num_dark_ml += barrel.ml_per_barrel * barrel.quantity
+                    dark_change += barrel.ml_per_barrel * barrel.quantity
                     barrels_to_insert.append(([0,0,0,1], barrel.ml_per_barrel * barrel.quantity)) 
 
 
@@ -92,8 +97,12 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
     
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                               SET num_green_ml = :num_green_ml, num_red_ml = :num_red_ml, num_blue_ml = :num_blue_ml, num_dark_ml = :num_dark_ml, gold = gold - :gold_paying;"""),
-                                {"num_green_ml": num_green_ml, "num_red_ml": num_red_ml, "num_blue_ml": num_blue_ml,"num_dark_ml": num_dark_ml, "gold_paying": gold_paying})
+                                               SET num_green_ml = num_green_ml + :green_change, 
+                                               num_red_ml = num_red_ml + :red_change, 
+                                               num_blue_ml = num_blue_ml + :blue_change, 
+                                               num_dark_ml = num_dark_ml + :dark_change, 
+                                               gold = gold - :gold_paying;"""),
+                                {"green_change": green_change, "red_change": red_change, "blue_change": blue_change,"dark_change": dark_change, "gold_paying": gold_paying})
         
             print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
             return "OK"
