@@ -69,10 +69,6 @@ def get_catalog():
                 if potion_entry['sku'] not in added_skus:
                     catalogue_list.append(potion_entry)
                     added_skus.add(potion_entry['sku'])
-                connection.execute(sqlalchemy.text("""UPDATE potion_info_table
-                                                        SET "1g_strat" = True
-                                                        WHERE potion_sku = :potion_sku"""),
-                                                        {"potion_sku": potion_type['sku']})
                 
             elif (day == "Edgeday" and potion_type['potion_type'][0] != 100) or \
                 (day == "Arcanaday" and potion_type['potion_type'][2] != 100) or \

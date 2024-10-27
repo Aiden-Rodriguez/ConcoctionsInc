@@ -169,7 +169,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             potion_list.append([potion_id, quantity])
 
         potion_ids = [potion[0] for potion in potion_list]
-        result = connection.execute(sqlalchemy.text("""SELECT id, inventory, price
+        result = connection.execute(sqlalchemy.text("""SELECT id, inventory, price, "1g_strat"
                                                     FROM potion_info_table
                                                     WHERE id IN :potion_ids"""),
                                                     {"potion_ids": tuple(potion_ids)})
@@ -177,14 +177,21 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         rows = result.mappings().all()
 
         # Create a lookup dictionary for potion details
-        potion_info_dict = {row['id']: (row['inventory'], row['price']) for row in rows}
+        potion_info_dict = {row['id']: (row['inventory'], row['price'], row['1g_strat']) for row in rows}
 
         total_gold_paid = 0
         total_potions_bought = 0
         # Update potion_list with inventory and price
         for potion in potion_list:
             potion_id = potion[0]
-            inventory, price = potion_info_dict.get(potion_id, (None, None))
+            inventory, price, one_g_strat = potion_info_dict.get(potion_id, (None, None, None))
+            #means we are going giga strat mode
+            if one_g_strat is False:
+                price = 1
+                connection.execute(sqlalchemy.text("""UPDATE potion_info_table
+                                                   SET "1g_strat" = True
+                                                   WHERE id = :potion_id"""),
+                                                   {"potion_id": potion_id})
             potion.append(inventory)
             potion.append(price)
             #change in potion numbers
@@ -192,9 +199,6 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             potion.append(potion[1]*price)
             total_gold_paid += potion[1]*price 
             total_potions_bought += potion[1]
-    
-
-            #print(f"Potion ID: {potion[0]}, Quantity: {potion[1]}, Inventory: {potion[2]}, Price: {potion[3]}, Gain in money: {potion[4]}")
 
         if transaction_occured == False:
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
@@ -210,9 +214,10 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
 
             connection.execute(sqlalchemy.text("""UPDATE cart_order_table 
-                                               SET transaction_occurred = :transaction_occurred
+                                               SET transaction_occurred = :transaction_occurred,
+                                               gold_paid = :gold_paid
                                                WHERE id = :order_id"""),
-                           {"transaction_occurred": True, "order_id": cart_id})
+                           {"transaction_occurred": True, "order_id": cart_id, "gold_paid": total_gold_paid})
             
             return {"total_potions_bought": total_potions_bought, "total_gold_paid": total_gold_paid}
         else: # This means the transaction has already happened --- concurrency error
