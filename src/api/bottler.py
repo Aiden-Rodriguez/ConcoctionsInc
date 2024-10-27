@@ -120,11 +120,11 @@ def get_bottle_plan():
         total_potion_amount = result.scalar()
 
         result = connection.execute(sqlalchemy.text("""SELECT potion_distribution,
-                                                    in_test
+                                                    in_test, inventory
                                                     FROM potion_info_table
                                                     ORDER BY priority desc"""))
         #potions will come based on highest priority
-        #0 priority on a potion means we wont make it
+        #0 priority on a potion means we wont make it / 111 as 5th element in type
 
         #list of all potions in db that are avail
         distributions = result.mappings().all()
@@ -142,6 +142,7 @@ def get_bottle_plan():
         for potion_type in distributions:
             distribution_values = potion_type['potion_distribution']
             in_test_value = potion_type['in_test']
+            inventory_value = potion_type['inventory']
             if 111 in distribution_values: #potion we will not make; decomitioned as it is not useful for selling or deemed as bad
                 pass
             elif 100 not in distribution_values: # mixed potion
@@ -150,7 +151,7 @@ def get_bottle_plan():
                 blue_cost = distribution_values[2]
                 dark_cost = distribution_values[3]
                 count = 0
-                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 7*(potion_capacity/50):
+                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 10*(potion_capacity/50) and inventory_value < 15*(potion_capacity/50):
                     #make less potions that are in testing stage so I dont waste stuff
                     if in_test_value == True:
                         count += 4
@@ -164,11 +165,14 @@ def get_bottle_plan():
                     add_or_increment_item(potion_list, {'potion_type': [red_cost, green_cost, blue_cost, dark_cost], 'quantity': 1})
             else: # full potion; just make 3 of them its like whatever you know
                 count = 0
+                # for early game, make 5 potions at a time to progress
+                if total_potion_amount < 8:
+                    count -= 2
                 red_cost = distribution_values[0]
                 green_cost = distribution_values[1]
                 blue_cost = distribution_values[2]
                 dark_cost = distribution_values[3]
-                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 3*(potion_capacity/50):
+                while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 3*(potion_capacity/50) and inventory_value < 10*(potion_capacity/50):
                     count += 1
                     total_potion_amount += 1
                     num_red_ml -= red_cost
