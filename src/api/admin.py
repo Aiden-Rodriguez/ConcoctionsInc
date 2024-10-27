@@ -23,10 +23,13 @@ def reset():
                                            num_blue_ml = 0, 
                                            num_red_ml = 0, 
                                            num_dark_ml = 0, 
-                                           potion_capacity = 50, ml_capacity = 10000"""))
+                                           potion_capacity = 50, 
+                                           ml_capacity = 10000,
+                                           reset_timestamp = DEFAULT"""))
         
         connection.execute(sqlalchemy.text("""UPDATE potion_info_table
-                                           SET inventory = 0
+                                           SET inventory = 0,
+                                           "1g_strat" = False
                                            """))
         
     return "OK"
