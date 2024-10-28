@@ -127,13 +127,28 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         ml_capacity = row['ml_capacity']
         gold = row['gold']
 
-        result = connection.execute(sqlalchemy.text("""SELECT day
+        result = connection.execute(sqlalchemy.text("""SELECT day, id
                                                         FROM DATE
                                                         ORDER BY id DESC
                                                         LIMIT 1"""))
-        #whatever the day is
-        day = result.scalar()
+        row = result.mappings().one()
+        day = row['day']
+        id = row['id']
 
+        barrel_data = [
+            {
+                "barrel_price": barrel.price,
+                "barrel_type": barrel.potion_type,
+                "barrel_amount": barrel.ml_per_barrel,
+                "time_id": id
+            }
+            for barrel in wholesale_catalog
+        ]
+        connection.execute(sqlalchemy.text("""INSERT INTO barrels_offered_table
+                                            (barrel_type, barrel_price, barrel_amount, time_id)
+                                            VALUES (:barrel_type, :barrel_price, :barrel_amount, :time_id)
+                                            """),
+                                            barrel_data)
         buying_list = []
         # ml_sum = num_blue_ml + num_dark_ml + num_green_ml + num_red_ml
         # ml_compare_list = [("red", num_red_ml), ("green", num_green_ml), ("blue", num_blue_ml), ("dark", num_dark_ml)]

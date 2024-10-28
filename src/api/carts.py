@@ -80,6 +80,29 @@ def post_visits(visit_id: int, customers: list[Customer]):
     Which customers visited the shop today?
     """
     print(customers)
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT id
+                                                        FROM DATE
+                                                        ORDER BY id DESC
+                                                        LIMIT 1"""))
+        #whatever the day is
+        id = result.scalar()
+
+        customer_data = [
+            {
+                "customer_name": customer.customer_name,
+                "customer_class": customer.character_class,
+                "customer_level": customer.level,
+            "time_id": id
+            }
+            for customer in customers
+        ]
+        connection.execute(sqlalchemy.text("""INSERT INTO customer_visit_table
+                                           (customer_name, customer_class, customer_level, time_id)
+                                           VALUES (:customer_name, :customer_class, :customer_level, :time_id)
+                                           """),
+                                           customer_data)
+
     return "OK"
 
 
