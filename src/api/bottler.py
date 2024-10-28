@@ -104,7 +104,7 @@ def get_bottle_plan():
     """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT num_green_ml, num_red_ml, num_blue_ml, num_dark_ml, 
-                                                    potion_capacity
+                                                    potion_capacity, gold
                                                     FROM global_inventory"""))
 
         row = result.mappings().one() 
@@ -114,6 +114,7 @@ def get_bottle_plan():
         num_blue_ml = row['num_blue_ml']
         num_dark_ml = row['num_dark_ml']
         potion_capacity = row['potion_capacity']
+        gold = row['gold']
 
         result = connection.execute(sqlalchemy.text("""SELECT SUM(inventory)
                                                     FROM potion_info_table"""))
@@ -139,13 +140,21 @@ def get_bottle_plan():
         potion_list = []
 
         # make # of potions ; vary on capacity
+        #check if we are in early game; if so dont mix
+        if total_potion_amount <= 10 and gold <= 500:
+            eg_check = True
+        else:
+            eg_check = False
+        
+        print(eg_check)
+            
         for potion_type in distributions:
             distribution_values = potion_type['potion_distribution']
             in_test_value = potion_type['in_test']
             inventory_value = potion_type['inventory']
             if 111 in distribution_values: #potion we will not make; decomitioned as it is not useful for selling or deemed as bad
                 pass
-            elif 100 not in distribution_values: # mixed potion
+            elif 100 not in distribution_values and eg_check != True: # mixed potion, dont make in eg
                 red_cost = distribution_values[0]
                 green_cost = distribution_values[1]
                 blue_cost = distribution_values[2]
@@ -163,23 +172,27 @@ def get_bottle_plan():
                     num_dark_ml -= dark_cost
                     total_potion_amount += 1
                     add_or_increment_item(potion_list, {'potion_type': [red_cost, green_cost, blue_cost, dark_cost], 'quantity': 1})
-            else: # full potion; just make 3 of them its like whatever you know
+            elif 100 in distribution_values: # full potion; just make 3 of them its like whatever you know
                 count = 0
                 # for early game, make 5 potions at a time to progress
-                if total_potion_amount < 8:
-                    count -= 2
                 red_cost = distribution_values[0]
                 green_cost = distribution_values[1]
                 blue_cost = distribution_values[2]
                 dark_cost = distribution_values[3]
                 while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 3*(potion_capacity/50) and inventory_value < 10*(potion_capacity/50):
-                    count += 1
+                    #just make all into full potions in early game and dont bother mixing.
+                    if eg_check == True:
+                        count += 0
+                    else:
+                        count += 1
                     total_potion_amount += 1
                     num_red_ml -= red_cost
                     num_green_ml -= green_cost 
                     num_blue_ml -= blue_cost
                     num_dark_ml -= dark_cost
                     add_or_increment_item(potion_list, {'potion_type': [red_cost, green_cost, blue_cost, dark_cost], 'quantity': 1})
+            else: # for when eg is true, and we dont wanna make mixed pots
+                pass
     
     return potion_list
 
