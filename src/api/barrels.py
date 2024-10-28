@@ -140,13 +140,14 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         ml_total = num_dark_ml + num_blue_ml + num_green_ml + num_red_ml
         ml_capacity = row['ml_capacity']
         gold = row['gold']
-        
-        result = connection.execute(sqlalchemy.text("""SELECT day, id
+
+        result = connection.execute(sqlalchemy.text("""SELECT day, id, time
                                                         FROM DATE
                                                         ORDER BY id DESC
                                                         LIMIT 1"""))
         row = result.mappings().one()
         day = row['day']
+        time = row['time']
         id = row['id']
 
         barrel_data = [
@@ -188,14 +189,13 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         while ml_total <= ml_capacity and gold > 0:
             purchased_any = False
-
             # for potion_type, percentage in ml_compare_list:
             for barrel in efficiency_list:
                 # if purchased_any:
                 #     break
 
                 #handle buying based having limits based on current max capacity
-                if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and (day != "Edgeday" and (day != "Soulday" and time >= 20)) and num_red_ml < 2000*(ml_capacity/10000):
+                if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and (day != "Edgeday" and not (day != "Soulday" and time >= 20)) and num_red_ml < 2000*(ml_capacity/10000):
                     if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
                         sku = barrel.sku
                         barrel.quantity -= 1
@@ -204,7 +204,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         num_red_ml += barrel.ml_per_barrel
                         add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
                         purchased_any = True
-                elif barrel.potion_type == [0,1,0,0] and "MINI" not in barrel.sku and (day != "Bloomday" and (day != "Edgeday" and time >= 20)) and num_green_ml < 2000*(ml_capacity/10000):
+                elif barrel.potion_type == [0,1,0,0] and "MINI" not in barrel.sku and (day != "Bloomday" and not (day != "Edgeday" and time >= 20)) and num_green_ml < 2000*(ml_capacity/10000):
                     if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
                         sku = barrel.sku
                         barrel.quantity -= 1
@@ -213,7 +213,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         num_green_ml += barrel.ml_per_barrel
                         add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
                         purchased_any = True
-                elif barrel.potion_type == [0,0,1,0] and "MINI" not in barrel.sku and (day != "Arcanaday" and (day != "Bloomday" and time >= 20)) and num_blue_ml < 2000*(ml_capacity/10000):
+                elif barrel.potion_type == [0,0,1,0] and "MINI" not in barrel.sku and (day != "Arcanaday" and not (day != "Bloomday" and time >= 20)) and num_blue_ml < 2000*(ml_capacity/10000):
                     if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
                         sku = barrel.sku
                         barrel.quantity -= 1
