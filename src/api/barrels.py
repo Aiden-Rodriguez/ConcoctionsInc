@@ -74,10 +74,10 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
 
             connection.execute(sqlalchemy.text("""INSERT INTO barrel_order_table 
-                                               (barrel_order_id, gold_cost) 
+                                               (barrel_order_id) 
                                                VALUES 
-                                               (:barrel_order_id, :gold_paying)"""),
-                               {"barrel_order_id": order_id, "gold_paying": gold_paying})  
+                                               (:barrel_order_id)"""),
+                               {"barrel_order_id": order_id})  
 
             result = connection.execute(sqlalchemy.text("""SELECT id
                                                         FROM DATE
@@ -100,9 +100,14 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                                                SET num_green_ml = num_green_ml + :green_change, 
                                                num_red_ml = num_red_ml + :red_change, 
                                                num_blue_ml = num_blue_ml + :blue_change, 
-                                               num_dark_ml = num_dark_ml + :dark_change, 
-                                               gold = gold - :gold_paying;"""),
-                                {"green_change": green_change, "red_change": red_change, "blue_change": blue_change,"dark_change": dark_change, "gold_paying": gold_paying})
+                                               num_dark_ml = num_dark_ml + :dark_change,
+                                               gold = gold - :gold_change"""),
+                                {"green_change": green_change, "red_change": red_change, "blue_change": blue_change,"dark_change": dark_change, "gold_change": gold_paying})
+            
+            connection.execute(sqlalchemy.text("""INSERT INTO ledger_gold (exchange_type, linking_id, gold_difference)
+                                               VALUES ('Barrel Purchase', :id, :gold_diff)
+                                               """),
+                                               {"id": order_id, "gold_diff": -1*gold_paying})
         
             print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
             return "OK"

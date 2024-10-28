@@ -214,10 +214,15 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
 
             connection.execute(sqlalchemy.text("""UPDATE cart_order_table 
-                                               SET transaction_occurred = :transaction_occurred,
-                                               gold_paid = :gold_paid
+                                               SET transaction_occurred = :transaction_occurred
                                                WHERE id = :order_id"""),
-                           {"transaction_occurred": True, "order_id": cart_id, "gold_paid": total_gold_paid})
+                           {"transaction_occurred": True, "order_id": cart_id})
+            
+            connection.execute(sqlalchemy.text("""INSERT INTO ledger_gold
+                                               (exchange_type, linking_id, gold_difference) 
+                                               VALUES ('Potion Sell', :id, :gold_diff)
+                                               """),
+                                               {"id": cart_id, "gold_diff": total_gold_paid})
             
             return {"total_potions_bought": total_potions_bought, "total_gold_paid": total_gold_paid}
         else: # This means the transaction has already happened --- concurrency error
