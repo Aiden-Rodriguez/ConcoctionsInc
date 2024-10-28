@@ -44,10 +44,15 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
             # Extract values from the row
         
-            num_green_ml = row['num_green_ml']
-            num_red_ml = row['num_red_ml']
-            num_blue_ml = row['num_blue_ml']
-            num_dark_ml = row['num_dark_ml']
+            # num_green_ml = row['num_green_ml']
+            # num_red_ml = row['num_red_ml']
+            # num_blue_ml = row['num_blue_ml']
+            # num_dark_ml = row['num_dark_ml']
+            red_change = 0
+            green_change = 0
+            blue_change = 0
+            dark_change = 0
+
         
             gold = row['gold']
             gold_paying = 0
@@ -55,24 +60,24 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             for barrel in barrels_delivered :
                 gold_paying += barrel.price * barrel.quantity
                 if barrel.potion_type == [1,0,0,0]:
-                    num_red_ml += barrel.ml_per_barrel * barrel.quantity
+                    red_change += barrel.ml_per_barrel * barrel.quantity
                     barrels_to_insert.append(([1,0,0,0], barrel.ml_per_barrel * barrel.quantity))  
                 if barrel.potion_type == [0,1,0,0]:
-                    num_green_ml += barrel.ml_per_barrel * barrel.quantity
+                    green_change += barrel.ml_per_barrel * barrel.quantity
                     barrels_to_insert.append(([0,1,0,0], barrel.ml_per_barrel * barrel.quantity)) 
                 if barrel.potion_type == [0,0,1,0]:
-                    num_blue_ml += barrel.ml_per_barrel * barrel.quantity
+                    blue_change += barrel.ml_per_barrel * barrel.quantity
                     barrels_to_insert.append(([0,0,1,0], barrel.ml_per_barrel * barrel.quantity)) 
                 if barrel.potion_type == [0,0,0,1]:
-                    num_dark_ml += barrel.ml_per_barrel * barrel.quantity
+                    dark_change += barrel.ml_per_barrel * barrel.quantity
                     barrels_to_insert.append(([0,0,0,1], barrel.ml_per_barrel * barrel.quantity)) 
 
 
             connection.execute(sqlalchemy.text("""INSERT INTO barrel_order_table 
-                                               (barrel_order_id, gold_cost) 
+                                               (barrel_order_id) 
                                                VALUES 
-                                               (:barrel_order_id, :gold_paying)"""),
-                               {"barrel_order_id": order_id, "gold_paying": gold_paying})  
+                                               (:barrel_order_id)"""),
+                               {"barrel_order_id": order_id})  
 
             result = connection.execute(sqlalchemy.text("""SELECT id
                                                         FROM DATE
@@ -92,8 +97,17 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
     
             connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                               SET num_green_ml = :num_green_ml, num_red_ml = :num_red_ml, num_blue_ml = :num_blue_ml, num_dark_ml = :num_dark_ml, gold = gold - :gold_paying;"""),
-                                {"num_green_ml": num_green_ml, "num_red_ml": num_red_ml, "num_blue_ml": num_blue_ml,"num_dark_ml": num_dark_ml, "gold_paying": gold_paying})
+                                               SET num_green_ml = num_green_ml + :green_change, 
+                                               num_red_ml = num_red_ml + :red_change, 
+                                               num_blue_ml = num_blue_ml + :blue_change, 
+                                               num_dark_ml = num_dark_ml + :dark_change,
+                                               gold = gold - :gold_change"""),
+                                {"green_change": green_change, "red_change": red_change, "blue_change": blue_change,"dark_change": dark_change, "gold_change": gold_paying})
+            
+            connection.execute(sqlalchemy.text("""INSERT INTO ledger_gold (exchange_type, linking_id, gold_difference)
+                                               VALUES ('Barrel Purchase', :id, :gold_diff)
+                                               """),
+                                               {"id": order_id, "gold_diff": -1*gold_paying})
         
             print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
             return "OK"
@@ -131,24 +145,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                                                         FROM DATE
                                                         ORDER BY id DESC
                                                         LIMIT 1"""))
-        row = result.mappings().one()
-        day = row['day']
-        id = row['id']
+        #whatever the day is
+        day = result.scalar()
 
-        barrel_data = [
-            {
-                "barrel_price": barrel.price,
-                "barrel_type": barrel.potion_type,
-                "barrel_amount": barrel.ml_per_barrel,
-                "time_id": id
-            }
-            for barrel in wholesale_catalog
-        ]
-        connection.execute(sqlalchemy.text("""INSERT INTO barrels_offered_table
-                                            (barrel_type, barrel_price, barrel_amount, time_id)
-                                            VALUES (:barrel_type, :barrel_price, :barrel_amount, :time_id)
-                                            """),
-                                            barrel_data)
         buying_list = []
         # ml_sum = num_blue_ml + num_dark_ml + num_green_ml + num_red_ml
         # ml_compare_list = [("red", num_red_ml), ("green", num_green_ml), ("blue", num_blue_ml), ("dark", num_dark_ml)]
@@ -181,7 +180,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 #     break
 
                 #handle buying based having limits based on current max capacity
-                if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and day != "Edgeday" and num_red_ml < 2000*(ml_capacity/10000):
+                if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and (day != "Edgeday" and (day != "Soulday" and time >= 20)) and num_red_ml < 2000*(ml_capacity/10000):
                     if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
                         sku = barrel.sku
                         barrel.quantity -= 1
@@ -190,7 +189,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         num_red_ml += barrel.ml_per_barrel
                         add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
                         purchased_any = True
-                elif barrel.potion_type == [0,1,0,0] and "MINI" not in barrel.sku and day != "Bloomday" and num_green_ml < 2000*(ml_capacity/10000):
+                elif barrel.potion_type == [0,1,0,0] and "MINI" not in barrel.sku and (day != "Bloomday" and (day != "Edgeday" and time >= 20)) and num_green_ml < 2000*(ml_capacity/10000):
                     if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
                         sku = barrel.sku
                         barrel.quantity -= 1
@@ -199,7 +198,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         num_green_ml += barrel.ml_per_barrel
                         add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
                         purchased_any = True
-                elif barrel.potion_type == [0,0,1,0] and "MINI" not in barrel.sku and day != "Arcanaday" and num_blue_ml < 2000*(ml_capacity/10000):
+                elif barrel.potion_type == [0,0,1,0] and "MINI" not in barrel.sku and (day != "Arcanaday" and (day != "Bloomday" and time >= 20)) and num_blue_ml < 2000*(ml_capacity/10000):
                     if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
                         sku = barrel.sku
                         barrel.quantity -= 1

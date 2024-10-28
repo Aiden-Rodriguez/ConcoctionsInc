@@ -19,7 +19,8 @@ def get_inventory():
                                                     num_blue_ml,
                                                     num_red_ml, 
                                                     num_dark_ml, 
-                                                    gold 
+                                                    gold,
+                                                    reset_timestamp
                                                     FROM global_inventory"""))
         row = result.mappings().one()
 
@@ -27,13 +28,20 @@ def get_inventory():
         num_blue_ml = row['num_blue_ml']
         num_red_ml = row['num_red_ml']
         num_dark_ml = row['num_dark_ml']
+        reset_timestamp = row['reset_timestamp']
         num_ml = num_red_ml + num_blue_ml + num_green_ml + num_dark_ml
         gold = row['gold']
 
         result = connection.execute(sqlalchemy.text("""SELECT SUM(inventory)
                                                     FROM potion_info_table"""))
         num_potions = result.scalar()
-        
+
+
+        # result = connection.execute(sqlalchemy.text("""SELECT 
+        #                                             linking_id, exchange_type
+        #                                             FROM ledger_gold
+        #                                             WHERE ledger_gold.created_at >= :reset_timestamp"""),
+        #                                             {"reset_timestamp": reset_timestamp})
         return {"number_of_potions": num_potions, "ml_in_barrels": num_ml, "gold": gold}
 
 
@@ -106,15 +114,21 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
         if row == True:
             return "OK"
         else:
+            gold_change = 1000*(capacity_purchase.ml_capacity + capacity_purchase.potion_capacity)
             connection.execute(sqlalchemy.text("""INSERT INTO capacity_order_table (id, potion_capacity_purchased, ml_capacity_purchased)
                 VALUES (:order_id, :potion_capacity_purchased, :ml_capacity_purchased)"""), 
                 {"order_id": order_id, "potion_capacity_purchased": capacity_purchase.potion_capacity, "ml_capacity_purchased": capacity_purchase.ml_capacity})
             
-            gold_change = 1000*(capacity_purchase.ml_capacity + capacity_purchase.potion_capacity)
+            
             connection.execute(sqlalchemy.text("""UPDATE global_inventory
                                                         SET ml_capacity = ml_capacity + :ml_change, 
                                                         potion_capacity = potion_capacity + :potion_change,
                                                         gold = gold - :gold_change"""),
                                                         {"ml_change": capacity_purchase.ml_capacity*10000, "potion_change": capacity_purchase.potion_capacity*50, "gold_change": gold_change})
+            
+            connection.execute(sqlalchemy.text("""INSERT INTO ledger_gold (exchange_type, linking_id, gold_difference)
+                                               VALUES ('Capacity Upgrade', :id, :gold_diff)
+                                               """),
+                                               {"id": order_id, "gold_diff": -1*gold_change})
 
     return "OK"
