@@ -241,7 +241,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                                                WHERE id = :order_id"""),
                            {"transaction_occurred": True, "order_id": cart_id})
             
-            connection.execute(sqlalchemy.text("""INSERT INTO ledger_gold
+            connection.execute(sqlalchemy.text("""INSERT INTO ledger_transactions
                                                (exchange_type, linking_id, gold_difference) 
                                                VALUES ('Potion Sell', :id, :gold_diff)
                                                """),

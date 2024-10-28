@@ -126,7 +126,7 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
                                                         gold = gold - :gold_change"""),
                                                         {"ml_change": capacity_purchase.ml_capacity*10000, "potion_change": capacity_purchase.potion_capacity*50, "gold_change": gold_change})
             
-            connection.execute(sqlalchemy.text("""INSERT INTO ledger_gold (exchange_type, linking_id, gold_difference)
+            connection.execute(sqlalchemy.text("""INSERT INTO ledger_transactions (exchange_type, linking_id, gold_difference)
                                                VALUES ('Capacity Upgrade', :id, :gold_diff)
                                                """),
                                                {"id": order_id, "gold_diff": -1*gold_change})

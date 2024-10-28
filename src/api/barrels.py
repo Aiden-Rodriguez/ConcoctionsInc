@@ -104,7 +104,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                                                gold = gold - :gold_change"""),
                                 {"green_change": green_change, "red_change": red_change, "blue_change": blue_change,"dark_change": dark_change, "gold_change": gold_paying})
             
-            connection.execute(sqlalchemy.text("""INSERT INTO ledger_gold (exchange_type, linking_id, gold_difference)
+            connection.execute(sqlalchemy.text("""INSERT INTO ledger_transactions (exchange_type, linking_id, gold_difference)
                                                VALUES ('Barrel Purchase', :id, :gold_diff)
                                                """),
                                                {"id": order_id, "gold_diff": -1*gold_paying})
