@@ -195,7 +195,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 #     break
 
                 #handle buying based having limits based on current max capacity
-                if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and (day != "Edgeday" and not (day != "Soulday" and time >= 20)) and num_red_ml < 2000*(ml_capacity/10000):
+                if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and (day != "Edgeday" or (day != "Soulday" and time >= 20)) and num_red_ml < 2000*(ml_capacity/10000):
                     if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
                         sku = barrel.sku
                         barrel.quantity -= 1
@@ -204,7 +204,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         num_red_ml += barrel.ml_per_barrel
                         add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
                         purchased_any = True
-                elif barrel.potion_type == [0,1,0,0] and "MINI" not in barrel.sku and (day != "Bloomday" and not (day != "Edgeday" and time >= 20)) and num_green_ml < 2000*(ml_capacity/10000):
+                elif barrel.potion_type == [0,1,0,0] and "MINI" not in barrel.sku and (day != "Bloomday" or (day != "Edgeday" and time >= 20)) and num_green_ml < 2000*(ml_capacity/10000):
                     if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
                         sku = barrel.sku
                         barrel.quantity -= 1
@@ -213,7 +213,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         num_green_ml += barrel.ml_per_barrel
                         add_or_increment_item(buying_list, {'sku': sku, 'quantity': 1})
                         purchased_any = True
-                elif barrel.potion_type == [0,0,1,0] and "MINI" not in barrel.sku and (day != "Arcanaday" and not (day != "Bloomday" and time >= 20)) and num_blue_ml < 2000*(ml_capacity/10000):
+                elif barrel.potion_type == [0,0,1,0] and "MINI" not in barrel.sku and (day != "Arcanaday" or (day != "Bloomday" and time >= 20)) and num_blue_ml < 2000*(ml_capacity/10000):
                     if barrel.quantity > 0 and barrel.ml_per_barrel + ml_total <= ml_capacity and gold >= barrel.price:
                         sku = barrel.sku
                         barrel.quantity -= 1
