@@ -228,24 +228,27 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                                                SET gold = gold + :gold_change"""),
             {"gold_change": total_gold_paid})
 
-
+            #ive never seen someone buy multiple potion types, but this is just incase
             for potion in potion_list:
+                potion_id = potion[0]
+                quantity = potion[1]
+                price = potion[3] 
                 connection.execute(sqlalchemy.text("""UPDATE potion_info_table
                                                     SET inventory = inventory - :potion_num
                                                     WHERE id = :potion_id"""),
-                                                    {"potion_num": potion[1], "potion_id": potion[0]})
-
+                                                    {"potion_num": quantity, "potion_id": potion_id})
+                
+                connection.execute(sqlalchemy.text("""INSERT INTO ledger_transactions
+                                                    (exchange_type, linking_id, gold_difference, potion_id, potion_quantity) 
+                                                    VALUES ('Potion Sell', :id, :gold_diff, :potion_id, :potion_quantity)
+                                                    """),
+                                                    {"id": cart_id, "gold_diff": quantity*price, "potion_id": potion_id, "potion_quantity": -1*quantity})
 
             connection.execute(sqlalchemy.text("""UPDATE cart_order_table 
                                                SET transaction_occurred = :transaction_occurred
                                                WHERE id = :order_id"""),
                            {"transaction_occurred": True, "order_id": cart_id})
             
-            connection.execute(sqlalchemy.text("""INSERT INTO ledger_transactions
-                                               (exchange_type, linking_id, gold_difference) 
-                                               VALUES ('Potion Sell', :id, :gold_diff)
-                                               """),
-                                               {"id": cart_id, "gold_diff": total_gold_paid})
             
             return {"total_potions_bought": total_potions_bought, "total_gold_paid": total_gold_paid}
         else: # This means the transaction has already happened --- concurrency error

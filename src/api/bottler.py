@@ -76,11 +76,29 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             time_id = result.scalar()
 
             for potion in potions_to_insert:
+                potion_type = potion[0]
+                potion_quantity = potion[1]
+
                 connection.execute(sqlalchemy.text("""INSERT INTO potions
                                                    (potion_order_id, time_id, potion_type, quantity)
                                                    VALUES (:potion_order_id, :time_id, :potion_type, :quantity)
                                                    """),
                                                    {"potion_order_id": order_id, "time_id": time_id, "potion_type": potion[0], "quantity": potion[1]})
+
+                result = connection.execute(sqlalchemy.text("""SELECT id
+                                                   FROM potion_info_table
+                                                   WHERE potion_distribution = :dist"""),
+                                                   {"dist": potion_type})
+                potion_id = result.scalar()
+                red_change = potion_type[0]*potion_quantity
+                green_change = potion_type[1]*potion_quantity
+                blue_change = potion_type[2]*potion_quantity
+                dark_change = potion_type[3]*potion_quantity
+                connection.execute(sqlalchemy.text("""INSERT INTO ledger_transactions
+                                                    (exchange_type, linking_id, potion_id, potion_quantity, red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
+                                                    VALUES ('Potion Create', :id, :potion_id, :potion_quantity, :red_change, :green_change, :blue_change, :dark_change)
+                                                    """),
+                                                    {"id": order_id, "potion_id": potion_id, "potion_quantity": potion[1], "red_change": -1*red_change, "green_change": -1*green_change, "blue_change": -1*blue_change, "dark_change": -1*dark_change})
             
             print(f"potions delievered: {potions_delivered} order_id: {order_id}")
             return "OK"
