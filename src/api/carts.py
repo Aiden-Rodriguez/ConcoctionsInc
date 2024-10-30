@@ -4,6 +4,7 @@ from src.api import auth
 from enum import Enum
 import sqlalchemy
 from src import database as db
+from src.api.inventory import get_gold_quan, get_ml_quan, get_potion_quan
 
 router = APIRouter(
     prefix="/carts",
@@ -140,12 +141,6 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-    # query = f"UPDATE cart_order_table SET {item_sku} = :quantity WHERE id = :order_id"
-
-    # with db.engine.begin() as connection:
-    #     connection.execute(sqlalchemy.text(query),
-    #             {"order_id": cart_id, "quantity": cart_item.quantity}
-    #             )
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT id
@@ -176,6 +171,8 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         row = result.mappings().one()
         transaction_occured = row['transaction_occurred']
 
+
+
         result = connection.execute(sqlalchemy.text("""SELECT potion_id, quantity
                                                     FROM carts 
                                                     WHERE cart_id = :order_id"""),
@@ -192,22 +189,52 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             potion_list.append([potion_id, quantity])
 
         potion_ids = [potion[0] for potion in potion_list]
-        result = connection.execute(sqlalchemy.text("""SELECT id, inventory, price, "1g_strat"
+
+        result = connection.execute(sqlalchemy.text("""SELECT
+                                                    reset_timestamp
+                                                    FROM global_inventory"""))
+
+        reset_timestamp = result.scalar()
+
+        potion_quans = get_potion_quan(connection, reset_timestamp)
+
+        result = connection.execute(sqlalchemy.text("""SELECT id, price, "1g_strat"
                                                     FROM potion_info_table
                                                     WHERE id IN :potion_ids"""),
                                                     {"potion_ids": tuple(potion_ids)})
 
         rows = result.mappings().all()
 
-        # Create a lookup dictionary for potion details
-        potion_info_dict = {row['id']: (row['inventory'], row['price'], row['1g_strat']) for row in rows}
+        # Create potion_info_dict with price and one_g_strat
+        potion_info_dict = {row['id']: (row['price'], row['1g_strat']) for row in rows}
+
+        # Initialize the updated dictionary
+        updated_dict = []
+
+        # Create a dictionary for potion quantities for easy lookup
+        potion_quantity_dict = {pq['potion_id']: pq['quantity'] for pq in potion_quans}
+
+        # Construct updated_dict with inventory
+        for potion_id, (price, one_g_strat) in potion_info_dict.items():
+            # Create a new dictionary for each potion
+            potion_dict = {
+                'id': potion_id,
+                'price': price,
+                '1g_strat': one_g_strat,
+                'quantity': potion_quantity_dict.get(potion_id, 0)  # Add inventory based on potion_quantity_dict
+            }
+    
+            updated_dict.append(potion_dict)  # Add the updated potion dictionary to the list
+
+        print(updated_dict)  # Print to check the updated dictionary
 
         total_gold_paid = 0
         total_potions_bought = 0
-        # Update potion_list with inventory and price
+
         for potion in potion_list:
             potion_id = potion[0]
-            inventory, price, one_g_strat = potion_info_dict.get(potion_id, (None, None, None))
+            inventory = potion[1]
+            potion_info = next((item for item in updated_dict if item['id'] == potion_id), None)
             #means we are going giga strat mode
             if one_g_strat is False:
                 price = 1

@@ -11,39 +11,65 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+def get_potion_quan(connection, reset_timestamp):
+    result = connection.execute(sqlalchemy.text("""
+                                                SELECT 
+                                                potion_id,
+                                                SUM(potion_quantity) AS quantity
+                                                FROM ledger_transactions
+                                                WHERE potion_id IS NOT NULL AND created_at >= :reset_timestamp
+                                                GROUP BY potion_id
+                                                HAVING SUM(potion_quantity) != 0
+                                                """),
+                                                {"reset_timestamp": reset_timestamp})
+    return result.mappings().all()
+
+def get_ml_quan(connection, reset_timestamp):
+    result = connection.execute(sqlalchemy.text("""
+                                                SELECT 
+                                                SUM(red_ml_change) AS red,
+                                                SUM(green_ml_change) AS green,
+                                                SUM(blue_ml_change) AS blue,
+                                                SUM(dark_ml_change) AS dark
+                                                FROM ledger_transactions;
+                                                """),
+                                                {"reset_timestamp": reset_timestamp})
+    row = result.mappings().one()
+    red_ml = row['red']
+    green_ml = row['green']
+    blue_ml = row['blue']
+    dark_ml = row['dark']
+    return [red_ml, green_ml, blue_ml, dark_ml]
+
+def get_gold_quan(connection, reset_timestamp):
+    result = connection.execute(sqlalchemy.text("""
+                                                SELECT 
+                                                SUM(gold_difference)
+                                                FROM ledger_transactions
+                                                WHERE created_at >= :reset_timestamp
+                                                """),
+                                                {"reset_timestamp": reset_timestamp})
+    return result.scalar()
+
 @router.get("/audit")
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT num_green_ml,
-                                                    num_blue_ml,
-                                                    num_red_ml, 
-                                                    num_dark_ml, 
-                                                    gold,
+        result = connection.execute(sqlalchemy.text("""SELECT
                                                     reset_timestamp
                                                     FROM global_inventory"""))
-        row = result.mappings().one()
+        reset_timestamp = result.scalar()
 
-        num_green_ml = row['num_green_ml']
-        num_blue_ml = row['num_blue_ml']
-        num_red_ml = row['num_red_ml']
-        num_dark_ml = row['num_dark_ml']
-        reset_timestamp = row['reset_timestamp']
-        num_ml = num_red_ml + num_blue_ml + num_green_ml + num_dark_ml
-        gold = row['gold']
+        gold = get_gold_quan(connection, reset_timestamp)
+        ml_quans = get_ml_quan(connection, reset_timestamp)
+        potion_quans = get_potion_quan(connection, reset_timestamp)
 
-        result = connection.execute(sqlalchemy.text("""SELECT SUM(inventory)
-                                                    FROM potion_info_table"""))
-        num_potions = result.scalar()
+        num_potions = 0
+        for potion in potion_quans:
+            num_potions += potion['quantity']
 
 
-        # result = connection.execute(sqlalchemy.text("""SELECT 
-        #                                             linking_id, exchange_type
-        #                                             FROM ledger_gold
-        #                                             WHERE ledger_gold.created_at >= :reset_timestamp"""),
-        #                                             {"reset_timestamp": reset_timestamp})
-        return {"number_of_potions": num_potions, "ml_in_barrels": num_ml, "gold": gold}
-
+        return {"number_of_potions": num_potions, "ml_in_barrels": ml_quans[0]+ml_quans[1]+ml_quans[2]+ml_quans[3], "gold": gold}
 
 # Gets called once a day
 @router.post("/plan")
@@ -56,25 +82,24 @@ def get_capacity_plan():
     #if potion amount is 40% of storage, buy upgrade
     #if ml amount is 40% of storage, buy upgrade
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT SUM(inventory)
-                                                    FROM potion_info_table"""))
-        num_potions = result.scalar()
 
-        result = connection.execute(sqlalchemy.text("""SELECT ml_capacity, potion_capacity,
-                                                    num_red_ml, num_green_ml,
-                                                    num_blue_ml, num_dark_ml,
-                                                    gold
+        result = connection.execute(sqlalchemy.text("""SELECT ml_capacity, potion_capacity, reset_timestamp
                                                     FROM global_inventory"""))
         row = result.mappings().one()
         
-        num_green_ml = row['num_green_ml']
-        num_blue_ml = row['num_blue_ml']
-        num_red_ml = row['num_red_ml']
-        num_dark_ml = row['num_dark_ml']
-        gold = row['gold']
-        num_ml_total = num_red_ml + num_blue_ml + num_green_ml + num_dark_ml
         ml_capacity = row['ml_capacity']
         potion_capacity = row['potion_capacity']
+        reset_timestamp = row['reset_timestamp']
+
+        gold = get_gold_quan(connection, reset_timestamp)
+        ml_quans = get_ml_quan(connection, reset_timestamp)
+        potion_quans = get_potion_quan(connection, reset_timestamp)
+
+        num_potions = 0
+        for potion in potion_quans:
+            num_potions += potion['sum']
+
+        num_ml_total = ml_quans[0]+ml_quans[1]+ml_quans[2]+ml_quans[3]
 
         quan_potion_capacity = 0
         quan_ml_capacity = 0

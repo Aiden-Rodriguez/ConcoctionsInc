@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from src.api.inventory import get_gold_quan, get_ml_quan, get_potion_quan
 
 #As a very basic initial logic, purchase a new small green potion barrel only if the number of potions 
 #in inventory is less than 10. Always mix all available green ml if any exists. Offer up for sale in 
@@ -37,24 +38,13 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         if row == True:
             return "OK"
         else: # if no exist then go ahead and change the db!
-
-            result = connection.execute(sqlalchemy.text("""SELECT num_green_ml, num_red_ml, num_dark_ml, num_blue_ml, gold 
-                                                        FROM global_inventory"""))
-            row = result.mappings().one()  # Using mappings to access the columns by name
-
-            # Extract values from the row
         
-            # num_green_ml = row['num_green_ml']
-            # num_red_ml = row['num_red_ml']
-            # num_blue_ml = row['num_blue_ml']
-            # num_dark_ml = row['num_dark_ml']
             red_change = 0
             green_change = 0
             blue_change = 0
             dark_change = 0
 
-        
-            gold = row['gold']
+
             gold_paying = 0
             barrels_to_insert = []
             for barrel in barrels_delivered :
@@ -129,17 +119,21 @@ def add_or_increment_item(item_list, new_item):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT num_green_ml, num_blue_ml, num_red_ml, num_dark_ml, gold, ml_capacity 
+        result = connection.execute(sqlalchemy.text("""SELECT reset_timestamp, ml_capacity
                                                     FROM global_inventory"""))
 
         row = result.mappings().one()
-        num_green_ml = row['num_green_ml']
-        num_blue_ml = row['num_blue_ml']
-        num_red_ml = row['num_red_ml']
-        num_dark_ml = row['num_dark_ml']
-        ml_total = num_dark_ml + num_blue_ml + num_green_ml + num_red_ml
+        reset_timestamp = row['reset_timestamp']
         ml_capacity = row['ml_capacity']
-        gold = row['gold']
+
+        ml_quan = get_ml_quan(connection, reset_timestamp)
+
+        num_red_ml = ml_quan[0]
+        num_green_ml = ml_quan[1]
+        num_blue_ml = ml_quan[2]
+        num_dark_ml = ml_quan[3]
+        ml_total = num_dark_ml + num_blue_ml + num_green_ml + num_red_ml
+        gold = get_gold_quan(connection, reset_timestamp)
 
         result = connection.execute(sqlalchemy.text("""SELECT day, id, time
                                                         FROM DATE
@@ -165,18 +159,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                                             """),
                                             barrel_data)
         buying_list = []
-        # ml_sum = num_blue_ml + num_dark_ml + num_green_ml + num_red_ml
-        # ml_compare_list = [("red", num_red_ml), ("green", num_green_ml), ("blue", num_blue_ml), ("dark", num_dark_ml)]
-
-        # #calculate percentages
-        # if ml_sum != 0:
-        #     ml_compare_list = [(name, ml / ml_sum) for name, ml in ml_compare_list]
-        # else:
-        #     ml_compare_list = [(name, 0) for name, ml in ml_compare_list]
-
-        # ml_compare_list.sort(key=lambda x: x[1])
-
-        # print(ml_compare_list)
 
         efficiency_list = []
 
@@ -191,8 +173,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             purchased_any = False
             # for potion_type, percentage in ml_compare_list:
             for barrel in efficiency_list:
-                # if purchased_any:
-                #     break
 
                 #handle buying based having limits based on current max capacity
                 if barrel.potion_type == [1,0,0,0] and "MINI" not in barrel.sku and (day != "Edgeday" or (day != "Soulday" and time >= 20)) and num_red_ml < 2000*(ml_capacity/10000):

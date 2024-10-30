@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from src.api.inventory import get_gold_quan, get_ml_quan, get_potion_quan
 
 router = APIRouter(
     prefix="/bottler",
@@ -121,25 +122,31 @@ def get_bottle_plan():
     Go from barrel to bottle.
     """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT num_green_ml, num_red_ml, num_blue_ml, num_dark_ml, 
-                                                    potion_capacity, gold
+        result = connection.execute(sqlalchemy.text("""SELECT
+                                                    potion_capacity, reset_timestamp
                                                     FROM global_inventory"""))
 
         row = result.mappings().one() 
 
-        num_green_ml = row['num_green_ml']
-        num_red_ml = row['num_red_ml']
-        num_blue_ml = row['num_blue_ml']
-        num_dark_ml = row['num_dark_ml']
         potion_capacity = row['potion_capacity']
-        gold = row['gold']
+        reset_timestamp = row['reset_timestamp']
 
-        result = connection.execute(sqlalchemy.text("""SELECT SUM(inventory)
-                                                    FROM potion_info_table"""))
-        total_potion_amount = result.scalar()
+        gold = get_gold_quan(connection, reset_timestamp)
+        ml_quan = get_ml_quan(connection, reset_timestamp)
+
+        num_red_ml = ml_quan[0]
+        num_green_ml = ml_quan[1]
+        num_blue_ml = ml_quan[2]
+        num_dark_ml = ml_quan[3]
+
+        potion_quans = get_potion_quan(connection, reset_timestamp)
+
+        total_potion_amount = 0
+        for potion in potion_quans:
+            total_potion_amount += potion['quantity']
 
         result = connection.execute(sqlalchemy.text("""SELECT potion_distribution,
-                                                    in_test, inventory
+                                                    in_test, id
                                                     FROM potion_info_table
                                                     ORDER BY priority desc"""))
         #potions will come based on highest priority
@@ -148,12 +155,24 @@ def get_bottle_plan():
         #list of all potions in db that are avail
         distributions = result.mappings().all()
 
-        # result = connection.execute(sqlalchemy.text("""SELECT day
-        #                                                 FROM DATE
-        #                                                 ORDER BY id DESC
-        #                                                 LIMIT 1"""))
-        # #whatever the day is
-        # day = result.scalar()
+        #match ledger values to dist values. if no value exists then its just 0
+
+        updated_dist = []
+
+        for potion_type in distributions:
+            potion_dict = dict(potion_type)
+            match = False
+            for type in potion_quans:
+                if potion_dict['id'] == type['potion_id']:
+                    potion_dict['inventory'] = type['quantity']
+                    match = True
+                    break
+            if not match:
+                potion_dict['inventory'] = 0
+    
+            updated_dist.append(potion_dict)
+
+        #print(updated_dist)
 
         potion_list = []
 
@@ -166,7 +185,7 @@ def get_bottle_plan():
         
         print(eg_check)
             
-        for potion_type in distributions:
+        for potion_type in updated_dist:
             distribution_values = potion_type['potion_distribution']
             in_test_value = potion_type['in_test']
             inventory_value = potion_type['inventory']
