@@ -31,7 +31,8 @@ def get_ml_quan(connection, reset_timestamp):
                                                 SUM(green_ml_change) AS green,
                                                 SUM(blue_ml_change) AS blue,
                                                 SUM(dark_ml_change) AS dark
-                                                FROM ledger_transactions;
+                                                FROM ledger_transactions
+                                                WHERE created_at >= :reset_timestamp
                                                 """),
                                                 {"reset_timestamp": reset_timestamp})
     row = result.mappings().one()
