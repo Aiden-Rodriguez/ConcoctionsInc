@@ -97,7 +97,7 @@ def get_capacity_plan():
 
         num_potions = 0
         for potion in potion_quans:
-            num_potions += potion['sum']
+            num_potions += potion['quantity']
 
         num_ml_total = ml_quans[0]+ml_quans[1]+ml_quans[2]+ml_quans[3]
 
@@ -147,9 +147,9 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
             
             connection.execute(sqlalchemy.text("""UPDATE global_inventory
                                                         SET ml_capacity = ml_capacity + :ml_change, 
-                                                        potion_capacity = potion_capacity + :potion_change,
-                                                        gold = gold - :gold_change"""),
-                                                        {"ml_change": capacity_purchase.ml_capacity*10000, "potion_change": capacity_purchase.potion_capacity*50, "gold_change": gold_change})
+                                                        potion_capacity = potion_capacity + :potion_change
+                                                        """),
+                                                        {"ml_change": capacity_purchase.ml_capacity*10000, "potion_change": capacity_purchase.potion_capacity*50})
             
             connection.execute(sqlalchemy.text("""INSERT INTO ledger_transactions (exchange_type, linking_id, gold_difference)
                                                VALUES ('Capacity Upgrade', :id, :gold_diff)

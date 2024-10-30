@@ -251,19 +251,19 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             total_potions_bought += potion[1]
 
         if transaction_occured == False:
-            connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                               SET gold = gold + :gold_change"""),
-            {"gold_change": total_gold_paid})
+            # connection.execute(sqlalchemy.text("""UPDATE global_inventory 
+            #                                    SET gold = gold + :gold_change"""),
+            # {"gold_change": total_gold_paid})
 
             #ive never seen someone buy multiple potion types, but this is just incase
             for potion in potion_list:
-                potion_id = potion[0]
-                quantity = potion[1]
-                price = potion[3] 
-                connection.execute(sqlalchemy.text("""UPDATE potion_info_table
-                                                    SET inventory = inventory - :potion_num
-                                                    WHERE id = :potion_id"""),
-                                                    {"potion_num": quantity, "potion_id": potion_id})
+            #     potion_id = potion[0]
+            #     quantity = potion[1]
+            #     price = potion[3] 
+            #     connection.execute(sqlalchemy.text("""UPDATE potion_info_table
+            #                                         SET inventory = inventory - :potion_num
+            #                                         WHERE id = :potion_id"""),
+            #                                         {"potion_num": quantity, "potion_id": potion_id})
                 
                 connection.execute(sqlalchemy.text("""INSERT INTO ledger_transactions
                                                     (exchange_type, linking_id, gold_difference, potion_id, potion_quantity) 
