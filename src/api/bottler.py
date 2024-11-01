@@ -228,53 +228,6 @@ def get_bottle_plan():
                     updated_dist.pop(0)
             else:
                 updated_dist.pop(0)
-
-
-        # for potion_type in updated_dist:
-        #     distribution_values = potion_type['potion_distribution']
-        #     in_test_value = potion_type['in_test']
-        #     inventory_value = potion_type['inventory']
-        #     if 111 in distribution_values: #potion we will not make; decomitioned as it is not useful for selling or deemed as bad
-        #         pass
-        #     elif 100 not in distribution_values and eg_check != True: # mixed potion, dont make in eg
-        #         red_cost = distribution_values[0]
-        #         green_cost = distribution_values[1]
-        #         blue_cost = distribution_values[2]
-        #         dark_cost = distribution_values[3]
-        #         count = 0
-        #         while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 10*(potion_capacity/50) and inventory_value < 15*(potion_capacity/50):
-        #             #make less potions that are in testing stage so I dont waste stuff
-        #             if in_test_value == True:
-        #                 count += 4
-        #             else:
-        #                 count += 1
-        #             num_red_ml -= red_cost
-        #             num_green_ml -= green_cost 
-        #             num_blue_ml -= blue_cost
-        #             num_dark_ml -= dark_cost
-        #             total_potion_amount += 1
-        #             add_or_increment_item(potion_list, {'potion_type': [red_cost, green_cost, blue_cost, dark_cost], 'quantity': 1})
-        #     elif 100 in distribution_values: # full potion; just make 3 of them its like whatever you know
-        #         count = 0
-        #         # for early game, make 5 potions at a time to progress
-        #         red_cost = distribution_values[0]
-        #         green_cost = distribution_values[1]
-        #         blue_cost = distribution_values[2]
-        #         dark_cost = distribution_values[3]
-        #         while red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and count < 3*(potion_capacity/50) and inventory_value < 10*(potion_capacity/50):
-        #             #just make all into full potions in early game and dont bother mixing.
-        #             if eg_check == True:
-        #                 count += 0
-        #             else:
-        #                 count += 1
-        #             total_potion_amount += 1
-        #             num_red_ml -= red_cost
-        #             num_green_ml -= green_cost 
-        #             num_blue_ml -= blue_cost
-        #             num_dark_ml -= dark_cost
-        #             add_or_increment_item(potion_list, {'potion_type': [red_cost, green_cost, blue_cost, dark_cost], 'quantity': 1})
-        #     else: # for when eg is true, and we dont wanna make mixed pots
-        #         pass
     
     return potion_list
 
