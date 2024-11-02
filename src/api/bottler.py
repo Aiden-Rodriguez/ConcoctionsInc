@@ -46,22 +46,6 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 potions_to_insert.append([potion_type, potion_quantity])
 
             print(potions_to_insert)
-
-            # connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-            #                                    SET 
-            #                                    num_green_ml = num_green_ml - :green_cost,
-            #                                    num_red_ml = num_red_ml - :red_cost,
-            #                                    num_blue_ml = num_blue_ml - :blue_cost,
-            #                                    num_dark_ml = num_dark_ml - :dark_cost"""),
-            #                         {"green_cost": green_cost, "red_cost": red_cost, "blue_cost": blue_cost, "dark_cost": dark_cost})
-            
-
-            # for potion in potions_to_insert:
-                # connection.execute(sqlalchemy.text("""UPDATE potion_info_table
-                #                                    SET inventory = inventory + :potions_to_add
-                #                                    WHERE potion_distribution = :potion_distribution
-                #                                    """),
-                #                                    {"potions_to_add": potion[1], "potion_distribution": potion[0]})
             
             
             connection.execute(sqlalchemy.text("""INSERT INTO potion_order_table 
@@ -185,9 +169,7 @@ def get_bottle_plan():
         
         #print(eg_check)
 
-        for potion in updated_dist:
-            if 111 in potion['potion_distribution']:
-                updated_dist.remove(potion)
+        updated_dist = [potion for potion in updated_dist if 111 not in potion['potion_distribution']]
 
         print(updated_dist)
 
