@@ -112,14 +112,14 @@ def get_capacity_plan():
         while purchased == True:
             purchased = False
             if curr_potion_capacity < 10:
-                if (num_potions/potion_capacity >= 0.30 and gold >= 1000 and num_potions > 20) or (curr_potion_capacity < curr_ml_capacity and gold >= 1000 and num_potions > 20):
+                if (num_potions/potion_capacity >= 0.40 and gold >= 1000 and num_potions > 20) or (curr_potion_capacity < curr_ml_capacity and gold >= 1000 and num_potions > 20):
                     gold -= 1000
                     quan_potion_capacity += 1
                     potion_capacity += 50
                     purchased = True
                     curr_potion_capacity += 1
             if curr_ml_capacity < 10:
-                if (num_ml_total/ml_capacity >= 0.30 and gold >= 1000 and num_potions > 20) or (curr_potion_capacity > curr_ml_capacity and gold >= 1000 and num_potions > 20):
+                if (num_ml_total/ml_capacity >= 0.40 and gold >= 1000 and num_potions > 20) or (curr_potion_capacity > curr_ml_capacity and gold >= 1000 and num_potions > 20):
                     gold -= 1000
                     quan_ml_capacity += 1
                     ml_capacity += 10000
