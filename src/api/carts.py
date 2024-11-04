@@ -141,7 +141,9 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-
+    print(item_sku)
+    print(cart_item)
+    
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT id
                                            FROM potion_info_table
