@@ -99,4 +99,60 @@ def get_catalog():
                 catalogue_list.append(potion_entry)
                 added_skus.add(potion_entry['sku'])
 
-        return catalogue_list
+        #return catalogue_list
+        return[
+            {
+            "sku": "bard_test_1",
+            "name": "bard_test_1",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            30,0,30,40
+            ]
+            },
+            {
+            "sku": "bard_test_2",
+            "name": "bard_test_2",
+            "quantity": 99,
+            "price": 35,
+            "potion_type": [
+            25,0,25,50
+            ]
+            },
+            {
+            "sku": "bard_test_3",
+            "name": "bard_test_3",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            35,0,35,30
+            ]
+            },
+            {
+            "sku": "bard_test_4",
+            "name": "bard_test_4",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            40,0,40,20
+            ]
+            },
+            {
+            "sku": "bard_test_5",
+            "name": "bard_test_5",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            30,0,45,25
+            ]
+            },
+            {
+            "sku": "bard_test_6",
+            "name": "bard_test_6",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            30,0,32,38
+            ]
+            }
+            ]
