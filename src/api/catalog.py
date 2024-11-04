@@ -56,17 +56,72 @@ def get_catalog():
                     )
         
         # print(potion_quan)
-        print(potion_in_inventory)
+        #print(potion_in_inventory)
 
-        result = connection.execute(sqlalchemy.text("""SELECT day
+
+        result = connection.execute(sqlalchemy.text("""SELECT day, time
                                                         FROM DATE
                                                         ORDER BY id DESC
                                                         LIMIT 1"""))
         #whatever the day is
-        day = result.scalar()
+        row = result.mappings().one()
+        day = row['day']
+        time = row['time']
 
+
+        #manage priorities of potions based on day
+        result = connection.execute(sqlalchemy.text("""SELECT 
+                                                    potion_info_table.potion_sku as potion_sku,
+                                                    potion_id,
+                                                    best_days,
+                                                    secondary_pick,
+                                                    optimal_potion_timing.for_class,
+                                                    time_range
+                                                    FROM
+                                                    optimal_potion_timing
+                                                    JOIN potion_info_table ON potion_info_table.id = optimal_potion_timing.potion_id
+                                                    """))
+        rows = result.mappings().all()
+        primary_list = []
+        secondary_list = []
+        day = "Soulday"
+        for row in rows:
+            potion_sku = row['potion_sku']
+            potion_id = row['potion_id']
+            best_days = row['best_days']
+            secondary_pick = row['secondary_pick']
+            for_class = row['for_class']
+            time_range = row['time_range']
+
+            #if the day is right, and in inventory put it in high priority
+            if day in best_days:
+                for potion in potion_in_inventory:
+                    if potion['sku'] == potion_sku:
+                        primary_list.append(potion_sku)
+            if day in secondary_pick:
+                for potion in potion_in_inventory:
+                    if potion['sku'] == potion_sku:
+                        secondary_list.append(potion_sku)
+
+        #print(primary_list)
+        #print(secondary_list)
+                        
+
+
+
+        # Pretty-print each row
+        # for row in rows:
+        #     print(f"Potion SKU: {row['potion_sku']}, "
+        #         f"Potion ID: {row['potion_id']}, "
+        #         f"Best Days: {row['best_days']}, "
+        #         f"Secondary Pick: {row['secondary_pick']}, "
+        #         f"For Class: {row['for_class']}, "
+        #         f"Time Range: {row['time_range']}")
+        
         catalogue_list = []
-        #potions_to_remove = []
+
+        
+
         added_skus = set()
         for potion_type in potion_in_inventory:
 
