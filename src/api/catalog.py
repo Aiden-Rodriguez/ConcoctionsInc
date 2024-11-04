@@ -77,16 +77,15 @@ def get_catalog():
             if one_g_strat == False:
                 potion_entry['quantity'] = 1
                 potion_entry['price'] = 1
-                if potion_entry['sku'] not in added_skus:
+                if potion_entry['sku'] not in added_skus and len(catalogue_list) < 6:
                     catalogue_list.append(potion_entry)
                     added_skus.add(potion_entry['sku'])
                 
             elif (day == "Edgeday" and potion_type['potion_type'][0] != 100) or \
                 (day == "Arcanaday" and potion_type['potion_type'][2] != 100) or \
                 (day == "Bloomday" and potion_type['potion_type'][1] != 100):
-                print("Bruh2")
                 #check for duplicates before appending
-                if potion_entry['sku'] not in added_skus:
+                if potion_entry['sku'] not in added_skus and len(catalogue_list) < 6:
                     catalogue_list.append(potion_entry)
                     added_skus.add(potion_entry['sku'])
 
