@@ -185,7 +185,7 @@ def get_bottle_plan():
             blue_cost = distribution_values[2]
             dark_cost = distribution_values[3]
             if 100 not in distribution_values and eg_check != True: #earlygame check
-                if red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and inventory_value < 12*(potion_capacity/50):
+                if red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and inventory_value < (12 + 4*(potion_capacity/50)):
                     num_red_ml -= red_cost
                     num_green_ml -= green_cost 
                     num_blue_ml -= blue_cost
@@ -197,7 +197,7 @@ def get_bottle_plan():
                 else: #if we cannot afford making it, then dont deal with it
                     updated_dist.pop(0)
             elif 100 in distribution_values:
-                if red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and inventory_value < 12*(potion_capacity/50):
+                if red_cost <= num_red_ml and green_cost <= num_green_ml and blue_cost <= num_blue_ml and dark_cost <= num_dark_ml and total_potion_amount < potion_capacity and inventory_value < (12 + 4*(potion_capacity/50)):
                     num_red_ml -= red_cost
                     num_green_ml -= green_cost 
                     num_blue_ml -= blue_cost
