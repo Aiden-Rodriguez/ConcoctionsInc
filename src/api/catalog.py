@@ -188,12 +188,12 @@ def get_catalog():
             "quantity": 99,
             "price": 30,
             "potion_type": [
-            30,0,30,40
+            0,0,50,50
             ]
             },
             {
-            "sku": "rogue_test_4",
-            "name": "rogue_test_4",
+            "sku": "rogue_test_4WL",
+            "name": "rogue_test_4WL",
             "quantity": 99,
             "price": 30,
             "potion_type": [
@@ -210,8 +210,8 @@ def get_catalog():
             ]
             },
             {
-            "sku": "rogue_test_6",
-            "name": "rogue_test_6",
+            "sku": "rogue_test_6R",
+            "name": "rogue_test_6R",
             "quantity": 99,
             "price": 30,
             "potion_type": [
