@@ -170,7 +170,7 @@ def get_catalog():
             "quantity": 99,
             "price": 30,
             "potion_type": [
-            25,25,0,50
+            20,20,10,50
             ]
             },
             {
@@ -188,7 +188,7 @@ def get_catalog():
             "quantity": 99,
             "price": 30,
             "potion_type": [
-            30,30,0,40
+            30,0,30,40
             ]
             },
             {
@@ -197,7 +197,7 @@ def get_catalog():
             "quantity": 99,
             "price": 30,
             "potion_type": [
-            20,20,10,50
+            20,20,30,30
             ]
             },
             {
@@ -206,7 +206,7 @@ def get_catalog():
             "quantity": 99,
             "price": 30,
             "potion_type": [
-            20,20,0,60
+            25,0,25,50
             ]
             },
             {
@@ -215,7 +215,7 @@ def get_catalog():
             "quantity": 99,
             "price": 30,
             "potion_type": [
-            20,29,1,50
+            0,25,25,50
             ]
             }
             ]
