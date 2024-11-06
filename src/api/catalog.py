@@ -162,7 +162,64 @@ def get_catalog():
             if len(catalogue_list) < 6:
                 catalogue_list.append(potion_entry)
 
-        return catalogue_list
+        # return catalogue_list
+        return[
+            {
+            "sku": "rogue_test_1",
+            "name": "rogue_test_1",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            25,25,0,50
+            ]
+            },
+            {
+            "sku": "rogue_test_2",
+            "name": "rogue_test_2",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            25,25,10,40
+            ]
+            },
+            {
+            "sku": "rogue_test_3",
+            "name": "rogue_test_3",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            30,30,0,40
+            ]
+            },
+            {
+            "sku": "rogue_test_4",
+            "name": "rogue_test_4",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            20,20,10,50
+            ]
+            },
+            {
+            "sku": "rogue_test_5",
+            "name": "rogue_test_5",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            20,20,0,60
+            ]
+            },
+            {
+            "sku": "rogue_test_6",
+            "name": "rogue_test_6",
+            "quantity": 99,
+            "price": 30,
+            "potion_type": [
+            20,29,1,50
+            ]
+            }
+            ]
+        
         # return[
         #     {
         #     "sku": "monk_test_1",
