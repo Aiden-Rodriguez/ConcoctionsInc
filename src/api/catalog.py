@@ -165,57 +165,57 @@ def get_catalog():
         return catalogue_list
         # return[
         #     {
-        #     "sku": "bard_test_1",
-        #     "name": "bard_test_1",
+        #     "sku": "monk_test_1",
+        #     "name": "monk_test_1",
         #     "quantity": 99,
         #     "price": 30,
         #     "potion_type": [
-        #     30,0,30,40
+        #     25,25,25,25
         #     ]
         #     },
         #     {
-        #     "sku": "bard_test_2",
-        #     "name": "bard_test_2",
-        #     "quantity": 99,
-        #     "price": 35,
-        #     "potion_type": [
-        #     25,0,25,50
-        #     ]
-        #     },
-        #     {
-        #     "sku": "bard_test_3",
-        #     "name": "bard_test_3",
+        #     "sku": "monk_test_2",
+        #     "name": "monk_test_2",
         #     "quantity": 99,
         #     "price": 30,
         #     "potion_type": [
-        #     35,0,35,30
+        #     35,35,30,0
         #     ]
         #     },
         #     {
-        #     "sku": "bard_test_4",
-        #     "name": "bard_test_4",
+        #     "sku": "monk_test_3",
+        #     "name": "monk_test_3",
         #     "quantity": 99,
         #     "price": 30,
         #     "potion_type": [
-        #     40,0,40,20
+        #     35,30,35,0
         #     ]
         #     },
         #     {
-        #     "sku": "bard_test_5",
-        #     "name": "bard_test_5",
+        #     "sku": "monk_test_4",
+        #     "name": "monk_test_4",
         #     "quantity": 99,
         #     "price": 30,
         #     "potion_type": [
-        #     30,0,45,25
+        #     30,35,35,0
         #     ]
         #     },
         #     {
-        #     "sku": "bard_test_6",
-        #     "name": "bard_test_6",
+        #     "sku": "monk_test_5",
+        #     "name": "monk_test_5",
         #     "quantity": 99,
         #     "price": 30,
         #     "potion_type": [
-        #     30,0,32,38
+        #     30,45,25,0
+        #     ]
+        #     },
+        #     {
+        #     "sku": "monk_test_6",
+        #     "name": "monk_test_6",
+        #     "quantity": 99,
+        #     "price": 30,
+        #     "potion_type": [
+        #     40,40,20,0
         #     ]
         #     }
         #     ]
