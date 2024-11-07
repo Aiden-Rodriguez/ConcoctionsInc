@@ -128,7 +128,7 @@ def search_orders(
 #
     return {
         "previous": "",
-        "next": "",
+        "next": "1",
         "results": return_vals
     }
 
