@@ -162,63 +162,63 @@ def get_catalog():
             if len(catalogue_list) < 6:
                 catalogue_list.append(potion_entry)
 
-        # return catalogue_list
-        return[
-            {
-            "sku": "rogue_test_1",
-            "name": "rogue_test_1",
-            "quantity": 99,
-            "price": 30,
-            "potion_type": [
-            20,20,10,50
-            ]
-            },
-            {
-            "sku": "rogue_test_2",
-            "name": "rogue_test_2",
-            "quantity": 99,
-            "price": 30,
-            "potion_type": [
-            25,25,10,40
-            ]
-            },
-            {
-            "sku": "rogue_test_3",
-            "name": "rogue_test_3",
-            "quantity": 99,
-            "price": 30,
-            "potion_type": [
-            0,0,50,50
-            ]
-            },
-            {
-            "sku": "rogue_test_4WL",
-            "name": "rogue_test_4WL",
-            "quantity": 99,
-            "price": 30,
-            "potion_type": [
-            20,20,30,30
-            ]
-            },
-            {
-            "sku": "rogue_test_5",
-            "name": "rogue_test_5",
-            "quantity": 99,
-            "price": 30,
-            "potion_type": [
-            25,0,25,50
-            ]
-            },
-            {
-            "sku": "rogue_test_6R",
-            "name": "rogue_test_6R",
-            "quantity": 99,
-            "price": 30,
-            "potion_type": [
-            0,25,25,50
-            ]
-            }
-            ]
+        return catalogue_list
+        # return[
+        #     {
+        #     "sku": "rogue_test_1",
+        #     "name": "rogue_test_1",
+        #     "quantity": 99,
+        #     "price": 30,
+        #     "potion_type": [
+        #     20,20,10,50
+        #     ]
+        #     },
+        #     {
+        #     "sku": "rogue_test_2",
+        #     "name": "rogue_test_2",
+        #     "quantity": 99,
+        #     "price": 30,
+        #     "potion_type": [
+        #     25,25,10,40
+        #     ]
+        #     },
+        #     {
+        #     "sku": "rogue_test_3",
+        #     "name": "rogue_test_3",
+        #     "quantity": 99,
+        #     "price": 30,
+        #     "potion_type": [
+        #     0,0,50,50
+        #     ]
+        #     },
+        #     {
+        #     "sku": "rogue_test_4WL",
+        #     "name": "rogue_test_4WL",
+        #     "quantity": 99,
+        #     "price": 30,
+        #     "potion_type": [
+        #     20,20,30,30
+        #     ]
+        #     },
+        #     {
+        #     "sku": "rogue_test_5",
+        #     "name": "rogue_test_5",
+        #     "quantity": 99,
+        #     "price": 30,
+        #     "potion_type": [
+        #     25,0,25,50
+        #     ]
+        #     },
+        #     {
+        #     "sku": "rogue_test_6R",
+        #     "name": "rogue_test_6R",
+        #     "quantity": 99,
+        #     "price": 30,
+        #     "potion_type": [
+        #     0,25,25,50
+        #     ]
+        #     }
+        #     ]
         
         # return[
         #     {
