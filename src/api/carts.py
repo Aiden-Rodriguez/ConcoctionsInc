@@ -68,6 +68,7 @@ def search_orders(
             potion_info_table.price,
             cart_order_table.customer_name,
             quantity,
+            quantity*potion_info_table.price AS total_cost,
             carts.created_at
             FROM carts
             JOIN cart_order_table ON carts.cart_id = cart_order_table.id
@@ -105,9 +106,9 @@ def search_orders(
         elif sort_col.value == "customer_name":
             query_value = "cart_order_table.customer_name"
         elif sort_col.value == "item_sku":
-            query_value = "potion_info_table.potion_sku"
-        else:
             query_value = "quantity"
+        else:
+            query_value = "total_cost"
         
         query += f"\nORDER BY {query_value} {sort_order.value}"
         query += " LIMIT :limit OFFSET :offset"
