@@ -124,8 +124,10 @@ def search_orders(
             count += 1
 
         #print(sort_col.value)
-        #print(sort_order.value)
-#
+        #print(sort_order.value
+
+        prev_val = int(search_page) - 0
+        next_val = int(search_page) + 1
     return {
         "previous": "",
         "next": "1",
