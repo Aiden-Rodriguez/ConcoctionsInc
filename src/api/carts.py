@@ -125,10 +125,10 @@ def search_orders(
 
         #print(sort_col.value)
         #print(sort_order.value)
-
+#
     return {
         "previous": "",
-        "next": str(1+int(search_page)),
+        "next": "",
         "results": return_vals
     }
 
