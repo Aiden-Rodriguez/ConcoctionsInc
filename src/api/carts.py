@@ -127,7 +127,7 @@ def search_orders(
         #print(sort_order.value)
 
     return {
-        "previous": str(int(search_page)-1),
+        "previous": "",
         "next": str(1+int(search_page)),
         "results": return_vals
     }
