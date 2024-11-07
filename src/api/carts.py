@@ -134,7 +134,7 @@ def search_orders(
         if search_page != "":
             next_val = str(int(search_page) + 1)
         else:
-            next_val = ""
+            next_val = "1"
         print(prev_val)
         print(next_val)
     return {
