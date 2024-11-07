@@ -129,8 +129,8 @@ def search_orders(
         prev_val = int(search_page) - 0
         next_val = int(search_page) + 1
     return {
-        "previous": "",
-        "next": "1",
+        "previous": str(prev_val),
+        "next": str(next_val),
         "results": return_vals
     }
 
