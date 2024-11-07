@@ -55,7 +55,7 @@ def search_orders(
     time is 5 total line items.
     """
 
-    limit = 5
+    limit = 6
     if search_page != "":
         offset = int(search_page) * 5
     else:
@@ -120,7 +120,8 @@ def search_orders(
         count = 0
         for row in rows:
             print(row)
-            return_vals.append({"line_item_id": count + offset, "item_sku": row['potion_sku'], "customer_name": row['customer_name'], "line_item_total": row['quantity']*row['price'], "timestamp": row['created_at']})
+            if count != 5:
+                return_vals.append({"line_item_id": count + offset, "item_sku": row['potion_sku'], "customer_name": row['customer_name'], "line_item_total": row['quantity']*row['price'], "timestamp": row['created_at']})
             count += 1
 
         #print(sort_col.value)
@@ -131,12 +132,17 @@ def search_orders(
             prev_val = ""
         if prev_val == "-1":
             prev_val = ""
-        if search_page != "":
-            next_val = str(int(search_page) + 1)
+
+        if search_page == "":
+            if count == 6:
+                next_val = "1"
+            else:
+                next_val = ""
         else:
-            next_val = "1"
-        print(prev_val)
-        print(next_val)
+            if count == 6:
+                next_val = str(int(search_page) + 1)
+            else:
+                next_val = ""
     return {
         "previous": prev_val,
         "next": next_val,
