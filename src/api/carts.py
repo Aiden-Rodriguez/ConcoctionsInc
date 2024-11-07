@@ -55,19 +55,84 @@ def search_orders(
     time is 5 total line items.
     """
 
+    limit = 5
+    if search_page != "":
+        offset = int(search_page) * 5
+    else:
+        offset = 0
+
+    params = {"limit": limit, "offset": offset} 
+    with db.engine.begin() as connection:
+        query = """
+            SELECT
+            potion_info_table.potion_sku,
+            cart_order_table.customer_name,
+            quantity,
+            carts.created_at
+            FROM carts
+            JOIN cart_order_table ON carts.cart_id = cart_order_table.id
+            JOIN potion_info_table ON carts.potion_id = potion_info_table.id
+            """
+        
+        conditions = []
+        if customer_name:
+            conditions.append("cart_order_table.customer_name LIKE :customer_name")
+            params["customer_name"] = f"%{customer_name}%"
+        
+        if potion_sku:
+            conditions.append("potion_info_table.potion_sku LIKE :potion_sku")
+            params["potion_sku"] = f"%{potion_sku}%"
+
+        # If any conditions exist, add them to the query
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query_value = ""
+        if sort_col.value == "timestamp":
+            query_value = "created_at"
+        elif sort_col.value == "customer_name":
+            query_value = "cart_order_table.customer_name"
+        elif sort_col.value == "item_sku":
+            query_value = "potion_info_table.potion_sku"
+        else:
+            query_value = "quantity"
+        
+        query += f"\nORDER BY {query_value} {sort_order.value}"
+        query += " LIMIT :limit OFFSET :offset"
+
+
+        return_vals = []
+
+        result = connection.execute(sqlalchemy.text(query), params)
+        rows = result.mappings().all()
+        count = 0
+        for row in rows:
+            print(row)
+            return_vals.append({"line_item_id": count + offset, "item_sku": row['potion_sku'], "customer_name": row['customer_name'], "line_item_total": row['quantity'], "timestamp": row['created_at']})
+            count += 1
+
+        #print(sort_col.value)
+        #print(sort_order.value)
+
     return {
         "previous": "",
         "next": "",
-        "results": [
-            {
-                "line_item_id": 1,
-                "item_sku": "1 oblivion potion",
-                "customer_name": "Scaramouche",
-                "line_item_total": 50,
-                "timestamp": "2021-01-01T00:00:00Z",
-            }
-        ],
+        "results": return_vals
     }
+
+    # return {
+    #     "previous": "",
+    #     "next": "",
+    #     "results": [
+    #         {
+    #             "line_item_id": 1,
+    #             "item_sku": "1 oblivion potion",
+    #             "customer_name": "Scaramouche",
+    #             "line_item_total": 50,
+    #             "timestamp": "2021-01-01T00:00:00Z",
+    #         }
+    #     ],
+    # }
 
 
 class Customer(BaseModel):
