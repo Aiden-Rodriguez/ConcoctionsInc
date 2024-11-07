@@ -121,7 +121,7 @@ def search_orders(
         for row in rows:
             print(row)
             if count != 5:
-                return_vals.append({"line_item_id": count + offset, "item_sku": row['quantity'] + ' ' + row['potion_sku'], "customer_name": row['customer_name'], "line_item_total": row['quantity']*row['price'], "timestamp": row['created_at']})
+                return_vals.append({"line_item_id": count + offset, "item_sku": str(row['quantity']) + ' ' + row['potion_sku'], "customer_name": row['customer_name'], "line_item_total": row['quantity']*row['price'], "timestamp": row['created_at']})
             count += 1
 
         #print(sort_col.value)
