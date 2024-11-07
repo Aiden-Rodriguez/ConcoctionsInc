@@ -61,11 +61,11 @@ def search_orders(
     else:
         offset = 0
 
-    params = {"limit": limit, "offset": offset} 
     with db.engine.begin() as connection:
         query = """
             SELECT
             potion_info_table.potion_sku,
+            potion_info_table.price,
             cart_order_table.customer_name,
             quantity,
             carts.created_at
@@ -74,6 +74,12 @@ def search_orders(
             JOIN potion_info_table ON carts.potion_id = potion_info_table.id
             """
         
+        result = connection.execute(sqlalchemy.text("""SELECT
+                                                    reset_timestamp
+                                                    FROM global_inventory"""))
+        reset_timestamp = result.scalar()
+
+        params = {"limit": limit, "offset": offset, "reset_timestamp": reset_timestamp} 
         conditions = []
         if customer_name:
             conditions.append("cart_order_table.customer_name LIKE :customer_name")
@@ -83,9 +89,15 @@ def search_orders(
             conditions.append("potion_info_table.potion_sku LIKE :potion_sku")
             params["potion_sku"] = f"%{potion_sku}%"
 
+
         # If any conditions exist, add them to the query
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
+            query += f" AND carts.created_at > :reset_timestamp"
+        else:
+            query += f" WHERE carts.created_at > :reset_timestamp"
+
+
 
         query_value = ""
         if sort_col.value == "timestamp":
@@ -108,15 +120,15 @@ def search_orders(
         count = 0
         for row in rows:
             print(row)
-            return_vals.append({"line_item_id": count + offset, "item_sku": row['potion_sku'], "customer_name": row['customer_name'], "line_item_total": row['quantity'], "timestamp": row['created_at']})
+            return_vals.append({"line_item_id": count + offset, "item_sku": row['potion_sku'], "customer_name": row['customer_name'], "line_item_total": row['quantity']*row['price'], "timestamp": row['created_at']})
             count += 1
 
         #print(sort_col.value)
         #print(sort_order.value)
 
     return {
-        "previous": "",
-        "next": "",
+        "previous": str(int(search_page)-1),
+        "next": str(1+int(search_page)),
         "results": return_vals
     }
 
