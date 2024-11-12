@@ -174,9 +174,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         efficiency_list.sort(
             key=lambda barrel: (
-                -(barrel.ml_per_barrel / barrel.price),  #efficiency
-                potion_type_map.get(tuple(barrel.potion_type), "") != "blue",
-                potion_type_map.get(tuple(barrel.potion_type), "") != "green"
+                -(barrel.ml_per_barrel / barrel.price)
             )
         )
 
