@@ -165,7 +165,20 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for barrel in wholesale_catalog:
             efficiency_list.append(barrel)
 
-        efficiency_list.sort(key=lambda barrel: barrel.ml_per_barrel / barrel.price, reverse=True)
+        potion_type_map = {
+            (1, 0, 0, 0): "red",
+            (0, 1, 0, 0): "green",
+            (0, 0, 1, 0): "blue",
+            (0, 0, 0, 1): "dark"
+        }
+
+        efficiency_list.sort(
+            key=lambda barrel: (
+                -(barrel.ml_per_barrel / barrel.price),  #efficiency
+                potion_type_map.get(tuple(barrel.potion_type), "") != "blue",
+                potion_type_map.get(tuple(barrel.potion_type), "") != "green"
+            )
+        )
 
         print(efficiency_list)
 
